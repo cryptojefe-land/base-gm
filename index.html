@@ -208,7 +208,12 @@ main{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:co
 /* LB */
 .lb{width:100%;max-width:460px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--card-shadow)}
 .lb-head{padding:.85rem 1.1rem;border-bottom:1px solid var(--border);font-size:.65rem;font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
-.lb-row{display:flex;align-items:center;padding:.65rem 1.1rem;border-bottom:1px solid rgba(255,255,255,.03);gap:.7rem;transition:background .15s}
+.lb-tabs{display:flex;gap:.3rem;padding:.5rem .8rem 0;border-bottom:1px solid var(--border)}
+.lb-tab{padding:.3rem .65rem;font-size:.62rem;font-family:'DM Mono',monospace;color:var(--soft);cursor:pointer;border-radius:6px 6px 0 0;transition:color .2s;border-bottom:2px solid transparent;margin-bottom:-1px}
+.lb-tab.active{color:var(--yellow);border-bottom-color:var(--yellow)}
+.lb-tab:hover:not(.active){color:var(--text)}
+.lb-sub-head{padding:.45rem 1.1rem .15rem;font-size:.58rem;font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.lb-row{display:flex;align-items:center;padding:.5rem 1.1rem;border-bottom:1px solid rgba(255,255,255,.03);gap:.6rem;transition:background .15s}
 .lb-row:hover{background:rgba(255,255,255,.02)}
 .lb-row:last-child{border-bottom:none}
 .lb-rank{font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);width:18px;flex-shrink:0}
@@ -408,7 +413,32 @@ footer a:hover{text-decoration:underline}
   <!-- LB -->
   <div class="lb" style="animation:fadeUp .7s .28s ease both">
     <div class="lb-head">🏆 &nbsp;Leaderboard</div>
-    <div id="lbBody"></div>
+
+    <!-- Tab switcher -->
+    <div class="lb-tabs">
+      <div class="lb-tab active" id="tabStreak" onclick="switchLbTab('streak')">🔥 Streaks</div>
+      <div class="lb-tab" id="tabGM" onclick="switchLbTab('gm')">☀️ GMs</div>
+      <div class="lb-tab" id="tabGifts" onclick="switchLbTab('gifts')">🎁 Gifts</div>
+    </div>
+
+    <!-- Streak leaderboard -->
+    <div id="lbStreak"><div id="lbBody"></div></div>
+
+    <!-- GM sent/received leaderboard -->
+    <div id="lbGM" style="display:none">
+      <div class="lb-sub-head">Sent</div>
+      <div id="lbGMSent"></div>
+      <div class="lb-sub-head" style="margin-top:.5rem">Received</div>
+      <div id="lbGMRecv"></div>
+    </div>
+
+    <!-- Gifts leaderboard -->
+    <div id="lbGifts" style="display:none">
+      <div class="lb-sub-head">Top Gifters</div>
+      <div id="lbGiftSent"></div>
+      <div class="lb-sub-head" style="margin-top:.5rem">Top Recipients</div>
+      <div id="lbGiftRecv"></div>
+    </div>
   </div>
 </main>
 
@@ -875,6 +905,18 @@ const MOCK_LB=[
   {addr:"0x742d35Cc6634C0532925a3b844Bc454e4438f44e",streak:28},
   {addr:"0x1111111111111111111111111111111111111111",streak:17},
 ];
+
+let currentLbTab = 'streak';
+
+function switchLbTab(tab) {
+  currentLbTab = tab;
+  ['streak','gm','gifts'].forEach(t => {
+    document.getElementById('lb'+t.charAt(0).toUpperCase()+t.slice(1)).style.display = t===tab ? '' : 'none';
+    document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('active', t===tab);
+  });
+  if (tab !== 'streak') loadEventStats();
+}
+
 function renderLB(items){
   const rc=["gold","silver","bronze","","","","","","",""];
   const rn=["🥇","🥈","🥉","4","5","6","7","8","9","10"];
@@ -885,6 +927,63 @@ function renderLB(items){
       <div class="lb-addr">${short(r.addr)}</div>
       <div class="lb-streak">${r.streak}🔥</div>
     </div>`).join('');
+}
+
+function renderSimpleLB(elId, items, valueFn) {
+  const rc=["gold","silver","bronze","","","","","","",""];
+  const rn=["🥇","🥈","🥉","4","5","6","7","8","9","10"];
+  document.getElementById(elId).innerHTML = items.slice(0,5).map((r,i)=>`
+    <div class="lb-row">
+      <div class="lb-rank ${rc[i]}">${rn[i]}</div>
+      <div class="lb-av" style="background:${aC(r.addr)}"></div>
+      <div class="lb-addr">${short(r.addr)}</div>
+      <div class="lb-streak">${valueFn(r)}</div>
+    </div>`).join('') || '<div style="padding:.8rem 1.1rem;font-size:.7rem;color:var(--muted)">No data yet</div>';
+}
+
+let _statsLoaded = false;
+async function loadEventStats() {
+  if (_statsLoaded) return;
+  _statsLoaded = true;
+
+  try {
+    const readOnly = new ethers.Contract(CFG.ADDR, ABI, baseProvider);
+
+    // Fetch last 2000 blocks of events
+    const latestBlock = await baseProvider.getBlockNumber();
+    const fromBlock   = Math.max(0, latestBlock - 2000);
+
+    const [gmFriendEvs, giftEvs] = await Promise.all([
+      readOnly.queryFilter(readOnly.filters.GMFriend(), fromBlock),
+      readOnly.queryFilter(readOnly.filters.GiftSent(),  fromBlock),
+    ]);
+
+    // GM sent/received counts
+    const gmSent = {}, gmRecv = {};
+    gmFriendEvs.forEach(e => {
+      const s = e.args[0], f = e.args[1];
+      gmSent[s] = (gmSent[s] || 0) + 1;
+      gmRecv[f] = (gmRecv[f] || 0) + 1;
+    });
+
+    // Gift sent/received amounts
+    const giftSent = {}, giftRecv = {};
+    giftEvs.forEach(e => {
+      const s = e.args[0], f = e.args[1], share = e.args[3];
+      giftSent[s] = (giftSent[s] || 0n) + share;
+      giftRecv[f] = (giftRecv[f] || 0n) + share;
+    });
+
+    const toArr = obj => Object.entries(obj).map(([addr,v])=>({addr,v})).sort((a,b)=>Number(b.v)-Number(a.v));
+
+    renderSimpleLB('lbGMSent',  toArr(gmSent),  r => r.v + ' sent');
+    renderSimpleLB('lbGMRecv',  toArr(gmRecv),  r => r.v + ' recv');
+    renderSimpleLB('lbGiftSent', toArr(giftSent), r => '$'+(parseFloat(ethers.formatEther(r.v))*2000).toFixed(2));
+    renderSimpleLB('lbGiftRecv', toArr(giftRecv), r => '$'+(parseFloat(ethers.formatEther(r.v))*2000).toFixed(2));
+
+  } catch(e) {
+    console.warn('stats:', e.message);
+  }
 }
 
 /* ══════════════════════════════
@@ -915,17 +1014,73 @@ function timeAgo(ts){
 /* ══════════════════════════════
    INIT
 ══════════════════════════════ */
+let _connecting = false;
+async function safeConnect() {
+  if (_connecting) return;
+  _connecting = true;
+  try { await connectWallet(); } finally { _connecting = false; }
+}
+
 function init(){
   const cl=document.getElementById('cLink');
   if(!CFG.ADDR.startsWith('0xYOUR')){cl.href=`${CFG.SCAN}/address/${CFG.ADDR}`;cl.textContent=short(CFG.ADDR);}
-  renderLB(MOCK_LB); startTimer(0); renderNotifs();
+  startTimer(0); renderNotifs();
+
+  // Load leaderboard immediately without wallet
+  loadPublicStats();
+
   if(window.ethereum){
-    window.ethereum.request({method:'eth_accounts'}).then(a=>{if(a.length)connectWallet();});
-    window.ethereum.on('chainChanged',()=>location.reload());
-    window.ethereum.on('accountsChanged',a=>{if(!a.length)location.reload();else connectWallet();});
+    window.ethereum.request({method:'eth_accounts'}).then(a=>{ if(a.length) safeConnect(); });
+    window.ethereum.on('chainChanged', chainId => {
+      if (!userAddr) return;
+      const id = parseInt(chainId, 16);
+      if (id !== CFG.CHAIN_ID) toast("Switch to Base Mainnet", 'err');
+      else safeConnect();
+    });
+    window.ethereum.on('accountsChanged', accounts => {
+      if (!accounts.length) {
+        userAddr = null; contract = null; signer = null;
+        document.getElementById('connectBtn').style.display = '';
+        document.getElementById('wInfo').style.display = 'none';
+        document.getElementById('streakNum').textContent = '—';
+        canGM = false; updateBtn();
+        document.getElementById('claimBanner').classList.remove('show');
+      } else if (accounts[0].toLowerCase() !== userAddr?.toLowerCase()) {
+        safeConnect();
+      }
+    });
   }
 }
-document.addEventListener('DOMContentLoaded',init);
+
+async function loadPublicStats() {
+  try {
+    const readOnly = new ethers.Contract(CFG.ADDR, ABI, baseProvider);
+
+    // Load streak leaderboard + global stats
+    const [total, users, best, tops, topS] = await Promise.all([
+      readOnly.totalGMs(),
+      readOnly.totalUsers(),
+      readOnly.bestStreak(),
+      readOnly.getTopAddrs(),
+      readOnly.getTopStreaks(),
+    ]);
+
+    document.getElementById('sTotal').textContent = fmtN(total);
+    document.getElementById('sUsers').textContent = fmtN(users);
+    document.getElementById('sBest').textContent  = best.toString() + '🔥';
+
+    const lb = [];
+    for(let i=0;i<10;i++) if(tops[i] && tops[i]!==ethers.ZeroAddress) lb.push({addr:tops[i],streak:Number(topS[i])});
+    renderLB(lb.length ? lb : MOCK_LB);
+
+    // Also pre-load event stats
+    await loadEventStats();
+  } catch(e) {
+    console.warn('public stats:', e.message);
+    renderLB(MOCK_LB);
+  }
+}
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
