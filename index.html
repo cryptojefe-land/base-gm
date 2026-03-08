@@ -363,7 +363,7 @@ const CFG = {
   CHAIN_ID:    8453,
   RPC:         "https://mainnet.base.org",
   SCAN:        "https://basescan.org",
-  PRICE:       ethers.parseEther("0.000005"),  // GM ~$0.01
+  PRICE:       ethers.parseEther("0.0000333"), // fallback, overridden by contract
   MINT_PRICE:  ethers.parseEther("0.00005"),   // NFT mint ~$0.10
   ETH_RPC:     "https://eth.llamarpc.com",
   // Basescan API key — get free at basescan.org/apis
@@ -374,8 +374,10 @@ const CFG = {
 const ABI = [
   "function sayGM() external payable",
   "function sayGMTo(address) external payable",
-  "function claimBasenameAchievement() external",
-  "function claimTxAchievement(uint256 achievementId, uint256 txCount) external",
+  "function claimBasenameAchievement() external payable",
+  "function claimTxAchievement(uint256 achievementId, uint256 txCount) external payable",
+  "function GM_PRICE() external view returns (uint256)",
+  "function MINT_PRICE() external view returns (uint256)",
   "function getUserData(address) external view returns (uint256,uint256,uint256,uint256,bool)",
   "function getAchievements(address) external view returns (uint256[10],bool[10])",
   "function totalGMs() external view returns (uint256)",
@@ -434,6 +436,14 @@ async function connectWallet() {
     userAddr = await signer.getAddress();
     await switchBase();
     contract = new ethers.Contract(CFG.ADDR, ABI, signer);
+    // Read actual price from contract
+    try {
+      CFG.PRICE      = await contract.GM_PRICE();
+      CFG.MINT_PRICE = await contract.MINT_PRICE();
+      console.log('GM_PRICE from contract:', ethers.formatEther(CFG.PRICE), 'ETH');
+    } catch(e) {
+      console.warn('Could not read price from contract, using fallback');
+    }
     document.getElementById('connectBtn').style.display = 'none';
     document.getElementById('wInfo').style.display = 'flex';
     document.getElementById('wAddr').textContent = short(userAddr);
@@ -865,4 +875,5 @@ document.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
 </html>
+
 
