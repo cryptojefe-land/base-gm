@@ -292,7 +292,7 @@ footer a:hover{text-decoration:underline}
     </div>
     <div class="card-bot">
       <button id="gmBtn" onclick="sendGM()" disabled>Connect wallet to GM ☀️</button>
-      <div class="btn-sub">$0.05 · Base Mainnet · on-chain forever</div>
+      <div class="btn-sub">$0.01 · Base Mainnet · on-chain forever</div>
     </div>
   </div>
 
@@ -330,7 +330,7 @@ footer a:hover{text-decoration:underline}
         <div class="rb-icon" id="rbIcon">✓</div>
         <div class="rb-text"><div class="rb-name" id="rbName"></div><div class="rb-addr" id="rbAddr"></div></div>
       </div>
-      <button id="friendBtn" onclick="sendGMFriend()" disabled>☀️ Send GM to Friend — $0.05</button>
+      <button id="friendBtn" onclick="sendGMFriend()" disabled>☀️ Send GM to Friend — $0.01</button>
       <div class="friend-btn-sub">Friend pays nothing — you send a GM on-chain</div>
     </div>
   </div>
@@ -359,12 +359,12 @@ footer a:hover{text-decoration:underline}
    CONFIG
 ══════════════════════════════════════ */
 const CFG = {
-  ADDR:        "0xc502471fCF4BdA4FAf6786f3453a90ABE792869F",
+  ADDR:        "0xe3a1c58C973C7d36EFF3d94c5D58511a03A9ad80",
   CHAIN_ID:    8453,
   RPC:         "https://mainnet.base.org",
   SCAN:        "https://basescan.org",
-  PRICE:       ethers.parseEther("0.0000167"), // GM ~$0.05
-  MINT_PRICE:  ethers.parseEther("0.0000333"), // NFT mint ~$0.10
+  PRICE:       ethers.parseEther("0.000005"),  // GM ~$0.01
+  MINT_PRICE:  ethers.parseEther("0.00005"),   // NFT mint ~$0.10
   ETH_RPC:     "https://eth.llamarpc.com",
   // Basescan API key — get free at basescan.org/apis
   // Without it, tx count check still works but is rate-limited
@@ -493,7 +493,7 @@ async function refresh() {
 function updateBtn() {
   const b = document.getElementById('gmBtn');
   if (!userAddr)  { b.disabled=true;  b.textContent='Connect wallet to GM ☀️'; }
-  else if (canGM) { b.disabled=false; b.textContent='GM World! ☀️  — $0.05'; }
+  else if (canGM) { b.disabled=false; b.textContent='GM World! ☀️  — $0.01'; }
   else            { b.disabled=true;  b.textContent="Already GM'd today ✓"; }
 }
 
@@ -503,7 +503,7 @@ function updateBtn() {
 async function sendGM() {
   if (!contract) { openModal(); return; }
   try {
-    showTx("Waiting for confirmation…","Confirm in your wallet. ~$0.05 + gas.");
+    showTx("Waiting for confirmation…","Confirm in your wallet. ~$0.01 + gas.");
     const tx = await contract.sayGM({ value: CFG.PRICE });
     attachTxLink(tx.hash);
     document.getElementById('txT').textContent = "Transaction sent…";
@@ -531,7 +531,7 @@ async function sendGMFriend() {
   if (!contract) { openModal(); return; }
   if (!resolvedFriendAddr) { toast("Enter a valid address or ENS name.", 'err'); return; }
   try {
-    showTx(`Sending GM to ${short(resolvedFriendAddr)}…`,"Confirm in wallet. ~$0.05 + gas.");
+    showTx(`Sending GM to ${short(resolvedFriendAddr)}…`,"Confirm in wallet. ~$0.01 + gas.");
     const tx = await contract.sayGMTo(resolvedFriendAddr,{value:CFG.PRICE});
     attachTxLink(tx.hash);
     document.getElementById('txT').textContent="Transaction sent…";
@@ -690,7 +690,7 @@ async function mintAchievement(id) {
   if (!a) return;
 
   try {
-    showTx(`Minting "${a.name}"…`, "Confirm in wallet. ~$0.10 + gas.");
+    showTx(`Minting "${a.name}"…`, "Confirm in wallet. ~$0.01 + gas.");
     let tx;
     if (id === 10) {
       tx = await contract.claimBasenameAchievement({ value: CFG.MINT_PRICE });
@@ -865,3 +865,4 @@ document.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
 </html>
+
