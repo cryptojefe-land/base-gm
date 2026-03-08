@@ -4,245 +4,271 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GM Base — Daily Streak</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --blue:#0052ff;--light:#3b82f6;
-  --yellow:#fbbf24;--orange:#f97316;
-  --bg:#060b14;--bg2:#0d1525;--bg3:#111d33;
-  --border:rgba(59,130,246,.15);
-  --text:#e2e8f0;--muted:#64748b;
-  --ok:#22c55e;--err:#ef4444;
+  --blue:#0052ff;--light:#60a5fa;
+  --yellow:#fbbf24;--orange:#f97316;--amber:#f59e0b;
+  --bg:#07090f;--bg2:#0d1120;--bg3:#131929;--bg4:#1a2236;
+  --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.1);
+  --text:#f0f4ff;--muted:#4a5568;--soft:#8899aa;
+  --ok:#10b981;--err:#f43f5e;
+  --card-shadow:0 0 0 1px rgba(255,255,255,.05),0 8px 32px rgba(0,0,0,.4);
 }
 html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;min-height:100vh;overflow-x:hidden}
-.bg-grid{position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(0,82,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,82,255,.04) 1px,transparent 1px);background-size:40px 40px}
-.bg-glow{position:fixed;z-index:0;border-radius:50%;filter:blur(100px);pointer-events:none}
-.g1{width:600px;height:600px;background:rgba(0,82,255,.1);top:-200px;left:-100px}
-.g2{width:400px;height:400px;background:rgba(251,191,36,.07);bottom:-100px;right:-50px}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
 
-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1.1rem 2rem;background:rgba(6,11,20,.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
-.nav-brand{display:flex;align-items:center;gap:.6rem;font-family:'Space Mono',monospace;font-weight:700;font-size:1.05rem}
-.base-icon{width:28px;height:28px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.base-icon img{width:100%;height:100%;object-fit:cover;border-radius:8px}
-.nav-right{display:flex;align-items:center;gap:.7rem}
-.chain-badge{display:flex;align-items:center;gap:.4rem;padding:.28rem .75rem;background:rgba(0,82,255,.1);border:1px solid rgba(0,82,255,.25);border-radius:20px;font-size:.68rem;font-family:'Space Mono',monospace;color:var(--light)}
-.chain-dot{width:6px;height:6px;border-radius:50%;background:var(--ok);animation:blink 2s infinite}
-#connectBtn{padding:.45rem 1.1rem;background:var(--blue);border:none;border-radius:8px;color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:.8rem;cursor:pointer;transition:background .2s,transform .15s}
+/* BG */
+.bg-noise{position:fixed;inset:0;z-index:0;opacity:.025;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");pointer-events:none}
+.bg-orb{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0}
+.o1{width:700px;height:700px;background:radial-gradient(circle,rgba(0,82,255,.12),transparent 70%);top:-200px;left:-200px}
+.o2{width:500px;height:500px;background:radial-gradient(circle,rgba(251,191,36,.08),transparent 70%);bottom:-100px;right:-100px}
+.o3{width:300px;height:300px;background:radial-gradient(circle,rgba(16,185,129,.06),transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;background:rgba(7,9,15,.8);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.nav-brand{display:flex;align-items:center;gap:.6rem;font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;letter-spacing:-.02em}
+.base-icon{width:28px;height:28px;border-radius:8px;overflow:hidden;flex-shrink:0}
+.base-icon img{width:100%;height:100%;object-fit:cover}
+.nav-right{display:flex;align-items:center;gap:.6rem}
+.chain-badge{display:flex;align-items:center;gap:.4rem;padding:.25rem .7rem;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:20px;font-size:.65rem;font-family:'DM Mono',monospace;color:var(--ok)}
+.chain-dot{width:5px;height:5px;border-radius:50%;background:var(--ok);animation:blink 2s infinite}
+
+/* BELL */
+.bell-wrap{position:relative;cursor:pointer}
+.bell-btn{width:36px;height:36px;border-radius:10px;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:.95rem;transition:background .2s;cursor:pointer;position:relative}
+.bell-btn:hover{background:var(--bg4)}
+.bell-badge{position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:var(--err);font-size:.55rem;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);display:none}
+.bell-badge.show{display:flex}
+
+/* NOTIFICATIONS DROPDOWN */
+.notif-dropdown{
+  position:absolute;top:calc(100% + 10px);right:0;
+  width:320px;
+  background:var(--bg2);
+  border:1px solid var(--border2);
+  border-radius:16px;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+  overflow:hidden;
+  display:none;
+  z-index:500;
+}
+.notif-dropdown.open{display:block;animation:fadeUp .2s ease}
+.notif-head{padding:.8rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.notif-head-title{font-size:.72rem;font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
+.notif-clear{font-size:.65rem;color:var(--soft);cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;transition:color .2s}
+.notif-clear:hover{color:var(--text)}
+.notif-list{max-height:280px;overflow-y:auto}
+.notif-item{padding:.85rem 1rem;border-bottom:1px solid var(--border);display:flex;gap:.7rem;align-items:flex-start;transition:background .15s}
+.notif-item:hover{background:rgba(255,255,255,.02)}
+.notif-item:last-child{border-bottom:none}
+.notif-icon{width:32px;height:32px;border-radius:9px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.notif-body{flex:1}
+.notif-text{font-size:.75rem;line-height:1.4;color:var(--text)}
+.notif-text b{color:var(--yellow)}
+.notif-time{font-size:.62rem;color:var(--muted);font-family:'DM Mono',monospace;margin-top:.2rem}
+.notif-empty{padding:2rem;text-align:center;font-size:.75rem;color:var(--muted);font-family:'DM Mono',monospace}
+
+/* WALLET */
+#connectBtn{padding:.42rem 1rem;background:var(--blue);border:none;border-radius:9px;color:#fff;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.78rem;cursor:pointer;transition:background .2s,transform .15s}
 #connectBtn:hover{background:#0041cc;transform:translateY(-1px)}
-.w-info{display:none;align-items:center;gap:.5rem;padding:.35rem .85rem;background:var(--bg3);border:1px solid var(--border);border-radius:8px;font-size:.74rem;font-family:'Space Mono',monospace}
-.w-av{width:18px;height:18px;border-radius:50%;flex-shrink:0}
+.w-info{display:none;align-items:center;gap:.5rem;padding:.3rem .8rem;background:var(--bg3);border:1px solid var(--border2);border-radius:9px;font-size:.72rem;font-family:'DM Mono',monospace}
+.w-av{width:16px;height:16px;border-radius:50%;flex-shrink:0}
 
+/* MAIN */
 main{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:7rem 1.5rem 5rem}
 
-.hero{text-align:center;margin-bottom:2.5rem;animation:fadeUp .7s ease both}
-.hero-tag{display:inline-flex;align-items:center;gap:.5rem;padding:.32rem 1rem;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.22);border-radius:20px;font-size:.7rem;font-family:'Space Mono',monospace;color:var(--yellow);letter-spacing:.06em;margin-bottom:1.3rem}
-.hero h1{font-size:clamp(2.8rem,8vw,5.5rem);font-weight:700;line-height:1;letter-spacing:-.03em;margin-bottom:.9rem}
-.gm-text{background:linear-gradient(135deg,var(--yellow),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hero-sub{color:var(--muted);font-size:.95rem;line-height:1.6;max-width:400px;margin:0 auto}
+/* HERO */
+.hero{text-align:center;margin-bottom:2.5rem;animation:fadeUp .8s ease both}
+.hero-tag{display:inline-flex;align-items:center;gap:.5rem;padding:.3rem .9rem;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.18);border-radius:20px;font-size:.65rem;font-family:'DM Mono',monospace;color:var(--amber);letter-spacing:.06em;margin-bottom:1.2rem}
+.hero h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(3rem,9vw,6rem);line-height:.95;letter-spacing:-.04em;margin-bottom:.8rem}
+.gm-text{background:linear-gradient(135deg,var(--yellow) 20%,var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{color:var(--soft);font-size:.9rem;line-height:1.6;max-width:360px;margin:0 auto}
 
-.card{width:100%;max-width:460px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:1.2rem}
-.card-top{padding:2rem;border-bottom:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:1.4rem}
-.sun-wrap{position:relative;width:96px;height:96px;display:flex;align-items:center;justify-content:center}
-.sun-ring{position:absolute;inset:0;border-radius:50%;border:2px dashed rgba(251,191,36,.25);animation:rot 20s linear infinite;will-change:transform}
-.sun-ring2{position:absolute;inset:8px;border-radius:50%;border:1px dashed rgba(249,115,22,.18);animation:rot 14s linear infinite reverse;will-change:transform}
-.sun-core{width:62px;height:62px;border-radius:50%;background:radial-gradient(circle,#fde68a,var(--yellow),var(--orange));display:flex;align-items:center;justify-content:center;font-size:1.7rem;box-shadow:0 0 28px rgba(251,191,36,.35),0 0 56px rgba(251,191,36,.12);transition:transform .3s,box-shadow .3s}
-.sun-core.pop{transform:scale(1.3);box-shadow:0 0 60px rgba(251,191,36,.7),0 0 120px rgba(251,191,36,.25)}
+/* CARDS */
+.card{width:100%;max-width:460px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:1rem;box-shadow:var(--card-shadow)}
+
+/* GM STREAK CARD */
+.card-top{padding:2rem;border-bottom:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:1.2rem}
+.sun-wrap{position:relative;width:90px;height:90px;display:flex;align-items:center;justify-content:center}
+.sun-ring{position:absolute;inset:0;border-radius:50%;border:1.5px dashed rgba(251,191,36,.2);animation:rot 20s linear infinite;will-change:transform}
+.sun-ring2{position:absolute;inset:8px;border-radius:50%;border:1px dashed rgba(249,115,22,.15);animation:rot 14s linear infinite reverse;will-change:transform}
+.sun-core{width:58px;height:58px;border-radius:50%;background:radial-gradient(circle,#fde68a,var(--yellow),var(--orange));display:flex;align-items:center;justify-content:center;font-size:1.6rem;box-shadow:0 0 24px rgba(251,191,36,.3),0 0 48px rgba(251,191,36,.1);transition:transform .3s,box-shadow .3s}
+.sun-core.pop{transform:scale(1.3);box-shadow:0 0 56px rgba(251,191,36,.7),0 0 100px rgba(251,191,36,.25)}
 .streak-display{text-align:center}
-.streak-num{font-size:3.8rem;font-weight:700;font-family:'Space Mono',monospace;background:linear-gradient(135deg,var(--yellow),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;margin-bottom:.2rem}
-.streak-label{font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-family:'Space Mono',monospace}
-.timer-row{display:flex;align-items:center;gap:.45rem;font-size:.75rem;color:var(--muted);font-family:'Space Mono',monospace}
-.timer-val{color:var(--text);font-weight:600}
-.card-bot{padding:1.4rem}
-#gmBtn{width:100%;padding:.95rem;background:linear-gradient(135deg,var(--yellow),var(--orange));border:none;border-radius:12px;color:#000;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.95rem;letter-spacing:.03em;cursor:pointer;transition:transform .2s,box-shadow .2s,opacity .2s;will-change:transform}
-#gmBtn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 36px rgba(251,191,36,.32)}
+.streak-num{font-family:'Syne',sans-serif;font-size:4rem;font-weight:800;background:linear-gradient(135deg,var(--yellow),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;letter-spacing:-.04em}
+.streak-label{font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-family:'DM Mono',monospace;margin-top:.1rem}
+.timer-row{display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:var(--soft);font-family:'DM Mono',monospace}
+.timer-val{color:var(--text);font-weight:500}
+.card-bot{padding:1.3rem}
+#gmBtn{width:100%;padding:.9rem;background:linear-gradient(135deg,var(--yellow),var(--orange));border:none;border-radius:12px;color:#000;font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;letter-spacing:.01em;cursor:pointer;transition:transform .2s,box-shadow .2s,opacity .2s;will-change:transform}
+#gmBtn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 12px 36px rgba(251,191,36,.28)}
 #gmBtn:active:not(:disabled){transform:scale(.98)}
-#gmBtn:disabled{opacity:.38;cursor:not-allowed}
-.btn-sub{text-align:center;margin-top:.6rem;font-size:.68rem;color:var(--muted);font-family:'Space Mono',monospace}
+#gmBtn:disabled{opacity:.35;cursor:not-allowed}
+.btn-sub{text-align:center;margin-top:.55rem;font-size:.65rem;color:var(--muted);font-family:'DM Mono',monospace}
 
-/* ══ ACHIEVEMENTS ══════════════════════════════════ */
-.ach-section{width:100%;max-width:460px;margin-bottom:1.2rem;animation:fadeUp .7s .15s ease both}
-.ach-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem}
-.ach-title{font-size:.72rem;font-family:'Space Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.ach-loading{font-size:.65rem;color:var(--muted);font-family:'Space Mono',monospace;display:none}
-
-/* category label */
-.ach-cat{font-size:.62rem;font-family:'Space Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;padding-left:.2rem}
-
-/* grid of badge cards */
-.ach-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;margin-bottom:.9rem}
-
-.ach-badge{
-  background:var(--bg2);
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:1rem;
-  display:flex;flex-direction:column;gap:.5rem;
-  position:relative;
-  transition:border-color .2s, transform .2s;
-}
-.ach-badge.unlocked{
-  border-color:rgba(251,191,36,.35);
-  background:linear-gradient(135deg,rgba(251,191,36,.05),rgba(249,115,22,.03));
-}
-.ach-badge.locked{opacity:.45}
-
-.ach-badge-icon{
-  width:44px;height:44px;border-radius:12px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.4rem;
-  background:var(--bg3);
-  border:1px solid var(--border);
-  flex-shrink:0;
-}
-.ach-badge.unlocked .ach-badge-icon{
-  border-color:rgba(251,191,36,.3);
-}
-
-.ach-badge-name{font-size:.78rem;font-weight:600;line-height:1.2}
-.ach-badge-desc{font-size:.65rem;color:var(--muted);font-family:'Space Mono',monospace;line-height:1.4}
-
-.ach-badge-status{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-top:.2rem;
-}
-.ach-check{
-  width:16px;height:16px;border-radius:50%;
-  background:var(--ok);
-  display:flex;align-items:center;justify-content:center;
-  font-size:.55rem;color:#fff;
-  opacity:0;
-  transition:opacity .3s;
-}
-.ach-badge.unlocked .ach-check{opacity:1}
-
-/* Mint button on badge */
-.ach-mint-btn{
-  padding:.25rem .7rem;
-  background:linear-gradient(135deg,var(--yellow),var(--orange));
-  border:none;border-radius:6px;
-  color:#000;font-family:'Space Grotesk',sans-serif;
-  font-size:.65rem;font-weight:700;cursor:pointer;
-  transition:transform .15s,opacity .2s;
+/* CLAIM BANNER */
+.claim-banner{
   display:none;
+  align-items:center;justify-content:space-between;
+  gap:.8rem;
+  padding:.9rem 1.2rem;
+  background:linear-gradient(135deg,rgba(16,185,129,.08),rgba(16,185,129,.04));
+  border:1px solid rgba(16,185,129,.2);
+  border-radius:14px;
+  margin-bottom:1rem;
+  width:100%;max-width:460px;
+  animation:fadeUp .4s ease both;
 }
-.ach-badge.unlocked .ach-mint-btn{display:block}
-.ach-badge.minted   .ach-mint-btn{display:none}
-.ach-badge.minted   .ach-check{background:linear-gradient(135deg,var(--yellow),var(--orange))}
-.ach-mint-btn:hover{transform:scale(1.05)}
+.claim-banner.show{display:flex}
+.claim-info{display:flex;flex-direction:column;gap:.2rem}
+.claim-label{font-size:.65rem;font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ok)}
+.claim-amount{font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;color:var(--text)}
+.claim-btn{padding:.55rem 1.1rem;background:var(--ok);border:none;border-radius:9px;color:#fff;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.8rem;cursor:pointer;transition:background .2s,transform .15s;white-space:nowrap;flex-shrink:0}
+.claim-btn:hover{background:#059669;transform:translateY(-1px)}
 
-/* progress bar (for tx achievements) */
-.ach-progress{
-  margin-top:.3rem;
-  height:3px;border-radius:2px;
-  background:var(--bg3);
-  overflow:hidden;
-}
-.ach-progress-fill{
-  height:100%;border-radius:2px;
-  background:linear-gradient(90deg,var(--yellow),var(--orange));
-  transition:width .6s ease;
-  width:0%;
-}
-
-/* ══ GM FRIEND ═══════════════════════════════════ */
-.card-head{display:flex;align-items:center;gap:.6rem;padding:1rem 1.4rem;border-bottom:1px solid var(--border);font-size:.72rem;font-family:'Space Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.friend-body{padding:1.2rem 1.4rem 1.4rem}
-.input-wrap{position:relative;margin-bottom:.75rem}
-.addr-input{width:100%;padding:.8rem 2.4rem .8rem 1rem;background:var(--bg3);border:1.5px solid var(--border);border-radius:12px;color:var(--text);font-family:'Space Mono',monospace;font-size:.8rem;outline:none;transition:border-color .2s,background .2s}
+/* GM FRIEND CARD */
+.card-head{display:flex;align-items:center;gap:.6rem;padding:.9rem 1.3rem;border-bottom:1px solid var(--border);font-size:.65rem;font-family:'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--soft)}
+.friend-body{padding:1.2rem 1.3rem 1.3rem}
+.input-wrap{position:relative;margin-bottom:.7rem}
+.addr-input{width:100%;padding:.75rem 2.4rem .75rem .9rem;background:var(--bg3);border:1.5px solid var(--border);border-radius:11px;color:var(--text);font-family:'DM Mono',monospace;font-size:.78rem;outline:none;transition:border-color .2s,background .2s}
 .addr-input::placeholder{color:var(--muted)}
-.addr-input:focus{border-color:rgba(59,130,246,.45);background:#0f1a2e}
-.addr-input.valid{border-color:rgba(34,197,94,.5)}
-.addr-input.invalid{border-color:rgba(239,68,68,.5)}
-.addr-input.loading{border-color:rgba(251,191,36,.4)}
-.input-spin{position:absolute;right:.75rem;top:50%;transform:translateY(-50%);width:14px;height:14px;border-radius:50%;border:2px solid rgba(251,191,36,.3);border-top-color:var(--yellow);animation:spin .6s linear infinite;display:none}
-.resolve-badge{display:none;align-items:center;gap:.5rem;padding:.5rem .9rem;border-radius:10px;font-size:.72rem;font-family:'Space Mono',monospace;margin-bottom:.75rem;line-height:1.4}
-.resolve-badge.ok{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);color:var(--ok)}
-.resolve-badge.err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:var(--err)}
+.addr-input:focus{border-color:rgba(96,165,250,.4);background:var(--bg4)}
+.addr-input.valid{border-color:rgba(16,185,129,.45)}
+.addr-input.invalid{border-color:rgba(244,63,94,.45)}
+.addr-input.loading{border-color:rgba(251,191,36,.35)}
+.input-spin{position:absolute;right:.7rem;top:50%;transform:translateY(-50%);width:13px;height:13px;border-radius:50%;border:2px solid rgba(251,191,36,.25);border-top-color:var(--yellow);animation:spin .6s linear infinite;display:none}
+.resolve-badge{display:none;align-items:center;gap:.5rem;padding:.5rem .85rem;border-radius:9px;font-size:.7rem;font-family:'DM Mono',monospace;margin-bottom:.7rem;line-height:1.4}
+.resolve-badge.ok{background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);color:var(--ok)}
+.resolve-badge.err{background:rgba(244,63,94,.07);border:1px solid rgba(244,63,94,.2);color:var(--err)}
 .resolve-badge.show{display:flex}
-.rb-icon{font-size:.9rem;flex-shrink:0}
+.rb-icon{font-size:.85rem;flex-shrink:0}
 .rb-text{display:flex;flex-direction:column;gap:1px}
-.rb-name{font-weight:700;font-size:.72rem}
-.rb-addr{font-size:.65rem;opacity:.7}
-#friendBtn{width:100%;padding:.8rem;background:var(--bg3);border:1.5px solid var(--border);border-radius:12px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;transition:border-color .2s,background .2s,transform .2s;display:flex;align-items:center;justify-content:center;gap:.5rem}
-#friendBtn:hover:not(:disabled){border-color:var(--yellow);background:rgba(251,191,36,.06);transform:translateY(-1px)}
-#friendBtn:disabled{opacity:.35;cursor:not-allowed}
-.friend-btn-sub{text-align:center;margin-top:.5rem;font-size:.65rem;color:var(--muted);font-family:'Space Mono',monospace}
-.domain-type{display:inline-flex;align-items:center;padding:.15rem .5rem;border-radius:5px;font-size:.6rem;font-weight:700;font-family:'Space Mono',monospace;vertical-align:middle;margin-left:.3rem}
-.domain-type.ens{background:rgba(98,126,234,.2);color:#625BF6;border:1px solid rgba(98,126,234,.3)}
-.domain-type.base{background:rgba(0,82,255,.15);color:#4d9fff;border:1px solid rgba(0,82,255,.3)}
+.rb-name{font-weight:500;font-size:.7rem}
+.rb-addr{font-size:.62rem;opacity:.65}
+.domain-type{display:inline-flex;align-items:center;padding:.1rem .45rem;border-radius:4px;font-size:.58rem;font-weight:500;font-family:'DM Mono',monospace;vertical-align:middle;margin-left:.3rem}
+.domain-type.ens{background:rgba(98,126,234,.15);color:#818cf8;border:1px solid rgba(98,126,234,.25)}
+.domain-type.base{background:rgba(0,82,255,.12);color:#60a5fa;border:1px solid rgba(0,82,255,.25)}
+
+/* ACTION CHOICE — GM или Gift */
+.action-choice{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.2rem}
+.choice-btn{
+  padding:.85rem .7rem;
+  background:var(--bg3);border:1.5px solid var(--border);
+  border-radius:12px;cursor:pointer;
+  text-align:center;
+  transition:border-color .2s,background .2s,transform .15s;
+  display:flex;flex-direction:column;align-items:center;gap:.35rem;
+}
+.choice-btn:hover:not(:disabled){border-color:var(--border2);background:var(--bg4);transform:translateY(-1px)}
+.choice-btn:disabled{opacity:.35;cursor:not-allowed}
+.choice-btn.selected{border-color:var(--yellow);background:rgba(251,191,36,.06)}
+.choice-icon{font-size:1.4rem}
+.choice-label{font-size:.75rem;font-weight:600;font-family:'DM Sans',sans-serif}
+.choice-desc{font-size:.62rem;color:var(--soft);font-family:'DM Mono',monospace}
+
+/* Gift amount input */
+.gift-amount-wrap{margin-top:.8rem;display:none}
+.gift-amount-wrap.show{display:block}
+.gift-label{font-size:.65rem;font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);margin-bottom:.4rem}
+.gift-input-row{display:flex;align-items:center;gap:.5rem}
+.gift-input{
+  flex:1;padding:.7rem .9rem;
+  background:var(--bg3);border:1.5px solid var(--border);
+  border-radius:11px;color:var(--text);
+  font-family:'DM Mono',monospace;font-size:.85rem;
+  outline:none;transition:border-color .2s;
+}
+.gift-input:focus{border-color:rgba(96,165,250,.4)}
+.gift-currency{font-size:.72rem;color:var(--soft);font-family:'DM Mono',monospace;white-space:nowrap}
+.gift-presets{display:flex;gap:.4rem;margin-top:.5rem;flex-wrap:wrap}
+.preset-btn{padding:.25rem .6rem;background:var(--bg4);border:1px solid var(--border);border-radius:6px;font-size:.65rem;font-family:'DM Mono',monospace;color:var(--soft);cursor:pointer;transition:border-color .15s,color .15s}
+.preset-btn:hover{border-color:var(--yellow);color:var(--yellow)}
+
+/* Send button */
+#friendSendBtn{
+  width:100%;margin-top:.9rem;
+  padding:.82rem;
+  background:var(--bg3);border:1.5px solid var(--border);
+  border-radius:12px;color:var(--text);
+  font-family:'DM Sans',sans-serif;font-weight:600;font-size:.88rem;
+  cursor:pointer;transition:border-color .2s,background .2s,transform .15s;
+}
+#friendSendBtn:hover:not(:disabled){border-color:var(--yellow);background:rgba(251,191,36,.06);transform:translateY(-1px)}
+#friendSendBtn:disabled{opacity:.3;cursor:not-allowed}
 
 /* STATS */
-.stats-row{width:100%;max-width:460px;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:1.2rem;animation:fadeUp .7s .35s ease both}
-.stat-box{background:var(--bg2);padding:.9rem;text-align:center}
-.stat-val{font-family:'Space Mono',monospace;font-size:1.25rem;font-weight:700;color:var(--text);margin-bottom:.15rem}
-.stat-key{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.stats-row{width:100%;max-width:460px;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:1rem;box-shadow:var(--card-shadow)}
+.stat-box{background:var(--bg2);padding:.85rem;text-align:center}
+.stat-val{font-family:'Syne',sans-serif;font-weight:700;font-size:1.2rem;color:var(--text);margin-bottom:.1rem}
+.stat-key{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-family:'DM Mono',monospace}
 
 /* LB */
-.lb{width:100%;max-width:460px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;animation:fadeUp .7s .45s ease both}
-.lb-head{padding:.9rem 1.2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.5rem;font-size:.7rem;font-family:'Space Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.lb-row{display:flex;align-items:center;padding:.7rem 1.2rem;border-bottom:1px solid rgba(59,130,246,.05);gap:.8rem;transition:background .15s}
-.lb-row:hover{background:rgba(0,82,255,.04)}
+.lb{width:100%;max-width:460px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--card-shadow)}
+.lb-head{padding:.85rem 1.1rem;border-bottom:1px solid var(--border);font-size:.65rem;font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
+.lb-row{display:flex;align-items:center;padding:.65rem 1.1rem;border-bottom:1px solid rgba(255,255,255,.03);gap:.7rem;transition:background .15s}
+.lb-row:hover{background:rgba(255,255,255,.02)}
 .lb-row:last-child{border-bottom:none}
-.lb-rank{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--muted);width:18px;flex-shrink:0}
+.lb-rank{font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);width:18px;flex-shrink:0}
 .lb-rank.gold{color:#fbbf24}.lb-rank.silver{color:#94a3b8}.lb-rank.bronze{color:#b45309}
-.lb-av{width:26px;height:26px;border-radius:50%;flex-shrink:0}
-.lb-addr{flex:1;font-family:'Space Mono',monospace;font-size:.7rem;color:var(--text)}
-.lb-streak{font-family:'Space Mono',monospace;font-weight:700;font-size:.8rem;color:var(--yellow)}
+.lb-av{width:24px;height:24px;border-radius:50%;flex-shrink:0}
+.lb-addr{flex:1;font-family:'DM Mono',monospace;font-size:.68rem;color:var(--text)}
+.lb-streak{font-family:'DM Mono',monospace;font-weight:500;font-size:.75rem;color:var(--yellow)}
 
 /* OVERLAYS */
-.overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(6,11,20,.9);backdrop-filter:blur(10px);align-items:center;justify-content:center}
+.overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(7,9,15,.85);backdrop-filter:blur(12px);align-items:center;justify-content:center}
 .overlay.on{display:flex}
-.modal{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:1.8rem;max-width:300px;width:90%}
-.modal h3{font-size:.95rem;font-weight:700;margin-bottom:.3rem}
-.modal p{font-size:.75rem;color:var(--muted);margin-bottom:1.3rem;line-height:1.5}
-.w-opt{display:flex;align-items:center;gap:.9rem;padding:.85rem 1rem;background:var(--bg3);border:1px solid var(--border);border-radius:12px;cursor:pointer;margin-bottom:.55rem;transition:border-color .2s,background .2s;font-weight:600;font-size:.85rem}
-.w-opt:hover{border-color:var(--blue);background:rgba(0,82,255,.07)}
-.w-opt-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
-.m-close{display:block;width:100%;margin-top:.9rem;padding:.55rem;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'Space Grotesk',sans-serif;font-size:.78rem;cursor:pointer;transition:border-color .2s}
-.m-close:hover{border-color:var(--muted)}
-.tx-box{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:2.2rem;text-align:center;max-width:320px;width:90%}
-.tx-spin{width:52px;height:52px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--yellow);animation:spin .75s linear infinite;margin:0 auto 1.1rem;will-change:transform}
-.tx-title{font-weight:700;font-size:.95rem;margin-bottom:.35rem}
-.tx-sub{font-size:.75rem;color:var(--muted);line-height:1.5}
-.tx-link{display:none;margin-top:.9rem;font-size:.72rem;color:var(--light);text-decoration:none}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:1.7rem;max-width:300px;width:90%;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.modal h3{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;margin-bottom:.3rem}
+.modal p{font-size:.73rem;color:var(--soft);margin-bottom:1.2rem;line-height:1.5}
+.w-opt{display:flex;align-items:center;gap:.85rem;padding:.8rem .95rem;background:var(--bg3);border:1px solid var(--border);border-radius:11px;cursor:pointer;margin-bottom:.5rem;transition:border-color .2s,background .2s;font-weight:600;font-size:.83rem}
+.w-opt:hover{border-color:var(--blue);background:rgba(0,82,255,.06)}
+.w-opt-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.m-close{display:block;width:100%;margin-top:.85rem;padding:.52rem;background:none;border:1px solid var(--border);border-radius:8px;color:var(--soft);font-family:'DM Sans',sans-serif;font-size:.75rem;cursor:pointer;transition:border-color .2s}
+.m-close:hover{border-color:var(--soft)}
+.tx-box{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:2rem;text-align:center;max-width:300px;width:90%;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.tx-spin{width:48px;height:48px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--yellow);animation:spin .75s linear infinite;margin:0 auto 1rem;will-change:transform}
+.tx-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;margin-bottom:.3rem}
+.tx-sub{font-size:.73rem;color:var(--soft);line-height:1.5}
+.tx-link{display:none;margin-top:.8rem;font-size:.7rem;color:var(--light);text-decoration:none}
 .tx-link:hover{text-decoration:underline}
-.toast{position:fixed;bottom:1.8rem;left:50%;transform:translateX(-50%) translateY(10px);padding:.7rem 1.3rem;border-radius:10px;font-size:.82rem;font-weight:500;white-space:nowrap;z-index:300;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s}
-.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast.ok{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.35);color:var(--ok)}
-.toast.err{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.35);color:var(--err)}
-.toast.inf{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.35);color:var(--light)}
-.toast.gold{background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.35);color:var(--yellow)}
 
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+/* TOAST */
+.toast{position:fixed;bottom:1.6rem;left:50%;transform:translateX(-50%) translateY(10px);padding:.65rem 1.2rem;border-radius:10px;font-size:.8rem;font-weight:500;white-space:nowrap;z-index:300;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);color:var(--ok)}
+.toast.err{background:rgba(244,63,94,.12);border:1px solid rgba(244,63,94,.3);color:var(--err)}
+.toast.inf{background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.3);color:var(--light)}
+.toast.gold{background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);color:var(--yellow)}
+
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 @keyframes rot{to{transform:rotate(360deg)}}
 @keyframes spin{to{transform:rotate(360deg)}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-@keyframes popIn{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
-.ach-pop{animation:popIn .4s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 
-footer{position:relative;z-index:1;text-align:center;padding:1.8rem;font-size:.68rem;color:var(--muted);font-family:'Space Mono',monospace}
+footer{position:relative;z-index:1;text-align:center;padding:1.6rem;font-size:.65rem;color:var(--muted);font-family:'DM Mono',monospace}
 footer a{color:var(--light);text-decoration:none}
 footer a:hover{text-decoration:underline}
-@media(max-width:500px){nav{padding:.9rem 1rem}.chain-badge{display:none}.ach-grid{grid-template-columns:1fr}}
+@media(max-width:500px){nav{padding:.85rem 1rem}.chain-badge{display:none}.action-choice{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div class="bg-grid"></div>
-<div class="bg-glow g1"></div>
-<div class="bg-glow g2"></div>
+<div class="bg-noise"></div>
+<div class="bg-orb o1"></div>
+<div class="bg-orb o2"></div>
+<div class="bg-orb o3"></div>
 
 <!-- WALLET MODAL -->
 <div class="overlay" id="walletModal">
   <div class="modal">
     <h3>Connect Wallet</h3>
     <p>Choose your wallet to start your GM streak on Base.</p>
-    <div class="w-opt" onclick="connectWallet()"><div class="w-opt-icon" style="background:#f6851b18">🦊</div>MetaMask</div>
-    <div class="w-opt" onclick="connectWallet()"><div class="w-opt-icon" style="background:#0052ff18">🔵</div>Coinbase Wallet</div>
-    <div class="w-opt" onclick="connectWallet()"><div class="w-opt-icon" style="background:#6366f118">💼</div>Other Wallet</div>
-    <button class="m-close" onclick="closeModal()">Cancel</button>
+    <div class="w-opt" onclick="connectWallet()"><div class="w-opt-icon" style="background:#f6851b15">🦊</div>MetaMask</div>
+    <div class="w-opt" onclick="connectWallet()"><div class="w-opt-icon" style="background:#0052ff15">🔵</div>Coinbase Wallet</div>
+    <div class="w-opt" onclick="connectWallet()"><div class="w-opt-icon" style="background:#6366f115">💼</div>Other Wallet</div>
+    <button class="m-close" onclick="closeModal('walletModal')">Cancel</button>
   </div>
 </div>
 
@@ -250,7 +276,7 @@ footer a:hover{text-decoration:underline}
 <div class="overlay" id="txOv">
   <div class="tx-box">
     <div class="tx-spin"></div>
-    <div class="tx-title" id="txT">Sending GM…</div>
+    <div class="tx-title" id="txT">Sending…</div>
     <div class="tx-sub"   id="txS">Confirm in your wallet.</div>
     <a class="tx-link" id="txL" href="#" target="_blank">View on Basescan →</a>
   </div>
@@ -260,21 +286,48 @@ footer a:hover{text-decoration:underline}
 
 <!-- NAV -->
 <nav>
-  <div class="nav-brand"><div class="base-icon"><img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCABcAFwDASIAAhEBAxEB/8QAGgABAQEBAQEBAAAAAAAAAAAAAAkHCAYDBf/EADUQAAECAwUECAQHAAAAAAAAAAABAwIEEQUGBwg3FxghdVNWk5TBwuHiEhMxYRYlMkFRkaL/xAAbAQEAAgMBAQAAAAAAAAAAAAAABQcDBAYIAv/EAC4RAAEDAgIFDQEAAAAAAAAAAAABAgMEBQYRBxQhUXISFhcyMzQ1U1SRocHRQf/aAAwDAQACEQMRAD8A7LAAAAAAAAAAAAAAAAAAAABzFmgx4vjcHEFq7N2WbOaZbkm33XZhlXY3Io1i4JxRERERP7UyjeqxX6axO4+4Z49c3eWS/mMKPRWF8L2iotFPLLTtc5zUVVVM1VVImed6PVEU3XeqxX6axO4+4b1WK/TWJ3H3GFAnuaNk9Kz2MWsSbzdd6rFfprE7j7hvVYr9NYncfcYUBzRsnpWew1iTebqmavFZFRfm2Iv2WR+v+jtDC+8T17cPLCvLMy7cu/aMk2+602qrDDGqcaV40rWhLpClWXLQy5/LG/ErfSTY7fb6SGSliRiq7JctmzI26ORz3KjlPfgAp8kAAADgvPHrm7yyX8xhRuuePXN3lkv5jCj1RhHwSl4EISo7RQADozAAAAEKVZctDLn8sb8SaqFKsuWhlz+WN+JVOlfuEHH9Kb9D1lPfgAookwAADgvPHrm7yyX8xhRuuePXN3lkv5jCj1RhHwSl4EISo7RQADozAAAAEKVZctDLn8sb8SaqFKsuWhlz+WN+JVOlfuEHH9Kb9D1lPfgAookwAADgvPIipjm5VF42XLqn3/WYVQqLe64dzb3TDMzeW7Vm2o+xAsDTswykUcMNa/D8X1pXjQ/D2K4UdQ7E7D1Lgsekmkt9vipZIXKrEyzTLLYR8tG57lcik1qChSnYrhR1DsTsPUbFcKOodidh6kr0r0HkP+P0+NRdvJrUFClOxXCjqHYnYeo2K4UdQ7E7D1HSvQeQ/wCP0ai7eTWQpVlzRUwMufVFT8sbUJgrhQiov4CsTh/LFT3cqwxKyzUtLMtsMMwJA223CkMMEKJRIUROCIifscbjPGcF/gjhhjVvJXPbluy/hsU9OsSqqqfQAFeG2AAAAAAAAAAAAAAAAAAf/9k=" alt="GM Base"></div>GM Base</div>
+  <div class="nav-brand">
+    <div class="base-icon"><img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCABcAFwDASIAAhEBAxEB/8QAGgABAQEBAQEBAAAAAAAAAAAAAAkHCAYDBf/EADUQAAECAwUECAQHAAAAAAAAAAABAwIEEQUGBwg3FxghdVNWk5TBwuHiEhMxYRYlMkFRkaL/xAAbAQEAAgMBAQAAAAAAAAAAAAAABQcDBAYIAv/EAC4RAAEDAgIFDQEAAAAAAAAAAAABAgMEBQYRBxQhUXISFhcyMzQ1U1SRocHRQf/aAAwDAQACEQMRAD8A7LAAAAAAAAAAAAAAAAAAAABzFmgx4vjcHEFq7N2WbOaZbkm33XZhlXY3Io1i4JxRERERP7UyjeqxX6axO4+4Z49c3eWS/mMKPRWF8L2iotFPLLTtc5zUVVVM1VVImed6PVEU3XeqxX6axO4+4b1WK/TWJ3H3GFAnuaNk9Kz2MWsSbzdd6rFfprE7j7hvVYr9NYncfcYUBzRsnpWew1iTebqmavFZFRfm2Iv2WR+v+jtDC+8T17cPLCvLMy7cu/aMk2+602qrDDGqcaV40rWhLpClWXLQy5/LG/ErfSTY7fb6SGSliRiq7JctmzI26ORz3KjlPfgAp8kAAADgvPHrm7yyX8xhRuuePXN3lkv5jCj1RhHwSl4EISo7RQADozAAAAEKVZctDLn8sb8SaqFKsuWhlz+WN+JVOlfuEHH9Kb9D1lPfgAookwAADgvPHrm7yyX8xhRuuePXN3lkv5jCj1RhHwSl4EISo7RQADozAAAAEKVZctDLn8sb8SaqFKsuWhlz+WN+JVOlfuEHH9Kb9D1lPfgAookwAADgvPIipjm5VF42XLqn3/WYVQqLe64dzb3TDMzeW7Vm2o+xAsDTswykUcMNa/D8X1pXjQ/D2K4UdQ7E7D1Lgsekmkt9vipZIXKrEyzTLLYR8tG57lcik1qChSnYrhR1DsTsPUbFcKOodidh6kr0r0HkP+P0+NRdvJrUFClOxXCjqHYnYeo2K4UdQ7E7D1HSvQeQ/wCP0ai7eTWQpVlzRUwMufVFT8sbUJgrhQiov4CsTh/LFT3cqwxKyzUtLMtsMMwJA223CkMMEKJRIUROCIifscbjPGcF/gjhhjVvJXPbluy/hsU9OsSqqqfQAFeG2AAAAAAAAAAAAAAAAAAf/9k=" alt="logo"></div>
+    GM Base
+  </div>
   <div class="nav-right">
     <div class="chain-badge"><div class="chain-dot"></div>Base Mainnet</div>
+    <!-- BELL -->
+    <div class="bell-wrap" id="bellWrap">
+      <div class="bell-btn" onclick="toggleNotif()" id="bellBtn">
+        🔔
+        <div class="bell-badge" id="bellBadge">0</div>
+      </div>
+      <div class="notif-dropdown" id="notifDropdown">
+        <div class="notif-head">
+          <span class="notif-head-title">Notifications</span>
+          <button class="notif-clear" onclick="clearNotifs()">Clear all</button>
+        </div>
+        <div class="notif-list" id="notifList">
+          <div class="notif-empty">No notifications yet</div>
+        </div>
+      </div>
+    </div>
     <div class="w-info" id="wInfo"><div class="w-av" id="wAv"></div><span id="wAddr">0x…</span></div>
-    <button id="connectBtn" onclick="openModal()">Connect Wallet</button>
+    <button id="connectBtn" onclick="openModal('walletModal')">Connect Wallet</button>
   </div>
 </nav>
 
 <main>
-
   <!-- HERO -->
   <div class="hero">
-    <div class="hero-tag">☀️ &nbsp;Base · Daily Streak · Achievements</div>
+    <div class="hero-tag">☀️ &nbsp;Base Blockchain · Daily Streak</div>
     <h1>Say <span class="gm-text">GM</span><br>Every Day</h1>
-    <p class="hero-sub">Build your streak. Earn achievement NFTs for streaks, Base txns and your Basename.</p>
+    <p class="hero-sub">Build your on-chain streak. Send GM to friends. Earn together.</p>
+  </div>
+
+  <!-- CLAIM BANNER -->
+  <div class="claim-banner" id="claimBanner">
+    <div class="claim-info">
+      <div class="claim-label">💰 Pending balance</div>
+      <div class="claim-amount" id="claimAmount">0 ETH</div>
+    </div>
+    <button class="claim-btn" onclick="doClaim()">Claim →</button>
   </div>
 
   <!-- GM CARD -->
@@ -296,30 +349,12 @@ footer a:hover{text-decoration:underline}
     </div>
   </div>
 
-  <!-- ACHIEVEMENTS -->
-  <div class="ach-section">
-    <div class="ach-head">
-      <div class="ach-title">🏅 Achievements</div>
-      <div class="ach-loading" id="achLoading">checking…</div>
-    </div>
-
-    <!-- Streak -->
-    <div class="ach-cat">🔥 Streak</div>
-    <div class="ach-grid" id="gridStreak"></div>
-
-    <!-- Basename -->
-    <div class="ach-cat">🌐 Basename</div>
-    <div class="ach-grid" id="gridBasename"></div>
-
-    <!-- Transactions -->
-    <div class="ach-cat">⚡ Base Transactions</div>
-    <div class="ach-grid" id="gridTx"></div>
-  </div>
-
-  <!-- GM FRIEND -->
-  <div class="card" style="animation:fadeUp .7s .2s ease both">
-    <div class="card-head"><span>👋</span>&nbsp;GM a Friend &nbsp;·&nbsp; 0x, .eth or .base.eth</div>
+  <!-- GM FRIEND CARD -->
+  <div class="card" style="animation:fadeUp .7s .12s ease both">
+    <div class="card-head">👋 &nbsp;GM a Friend</div>
     <div class="friend-body">
+
+      <!-- Address input -->
       <div class="input-wrap">
         <input class="addr-input" id="friendInput" type="text"
           placeholder="0x… or vitalik.eth or alice.base.eth"
@@ -330,20 +365,48 @@ footer a:hover{text-decoration:underline}
         <div class="rb-icon" id="rbIcon">✓</div>
         <div class="rb-text"><div class="rb-name" id="rbName"></div><div class="rb-addr" id="rbAddr"></div></div>
       </div>
-      <button id="friendBtn" onclick="sendGMFriend()" disabled>☀️ Send GM to Friend — $0.01</button>
-      <div class="friend-btn-sub">Friend pays nothing — you send a GM on-chain</div>
+
+      <!-- Action choice -->
+      <div class="action-choice" id="actionChoice">
+        <div class="choice-btn selected" id="choiceGM" onclick="selectAction('gm')">
+          <div class="choice-icon">☀️</div>
+          <div class="choice-label">GM</div>
+        </div>
+        <div class="choice-btn" id="choiceGift" onclick="selectAction('gift')">
+          <div class="choice-icon">🎁</div>
+          <div class="choice-label">Gift</div>
+        </div>
+      </div>
+
+      <!-- Gift amount (shown when Gift selected) -->
+      <div class="gift-amount-wrap" id="giftAmountWrap">
+        <div class="gift-label">Amount to send</div>
+        <div class="gift-input-row">
+          <input class="gift-input" id="giftInput" type="number" min="0.000005" step="0.000005" placeholder="0.00" oninput="updateGiftBtn()">
+          <span class="gift-currency">ETH</span>
+        </div>
+        <div class="gift-presets">
+          <div class="preset-btn" onclick="setPreset(0.0001)">~$0.20</div>
+          <div class="preset-btn" onclick="setPreset(0.0005)">~$1</div>
+          <div class="preset-btn" onclick="setPreset(0.001)">~$2</div>
+          <div class="preset-btn" onclick="setPreset(0.005)">~$10</div>
+          <div class="preset-btn" onclick="setPreset(0.025)">~$50</div>
+        </div>
+      </div>
+
+      <button id="friendSendBtn" onclick="sendToFriend()" disabled>☀️ Send GM — $0.01</button>
     </div>
   </div>
 
   <!-- STATS -->
-  <div class="stats-row">
+  <div class="stats-row" style="animation:fadeUp .7s .2s ease both">
     <div class="stat-box"><div class="stat-val" id="sTotal">—</div><div class="stat-key">Total GMs</div></div>
     <div class="stat-box"><div class="stat-val" id="sUsers">—</div><div class="stat-key">Users</div></div>
-    <div class="stat-box"><div class="stat-val" id="sBest">—</div><div class="stat-key">Best Streak</div></div>
+    <div class="stat-box"><div class="stat-val" id="sBest">—</div> <div class="stat-key">Best Streak</div></div>
   </div>
 
   <!-- LB -->
-  <div class="lb">
+  <div class="lb" style="animation:fadeUp .7s .28s ease both">
     <div class="lb-head">🏆 &nbsp;Leaderboard</div>
     <div id="lbBody"></div>
   </div>
@@ -355,80 +418,57 @@ footer a:hover{text-decoration:underline}
 </footer>
 
 <script>
-/* ══════════════════════════════════════
+/* ══════════════════════════════
    CONFIG
-══════════════════════════════════════ */
+══════════════════════════════ */
 const CFG = {
-  ADDR:        "0xf0C9Ef2DD1CaE349789F80D58a4f6c5Cfea9baA8",
-  CHAIN_ID:    8453,
-  RPC:         "https://mainnet.base.org",
-  SCAN:        "https://basescan.org",
-  PRICE:       ethers.parseEther("0.0000333"), // fallback, overridden by contract
-  MINT_PRICE:  ethers.parseEther("0.00005"),   // NFT mint ~$0.10
-  ETH_RPC:     "https://eth.llamarpc.com",
-  // Basescan API key — get free at basescan.org/apis
-  // Without it, tx count check still works but is rate-limited
-  BASESCAN_KEY: "YourBasescanAPIKey",
+  ADDR:     "0x4fad29ccb0c8dbfdbea4d492604a09639c98a002",
+  CHAIN_ID: 8453,
+  RPC:      "https://mainnet.base.org",
+  SCAN:     "https://basescan.org",
+  PRICE:    ethers.parseEther("0.000005"),
+  ETH_RPC:  "https://eth.llamarpc.com",
 };
 
 const ABI = [
   "function sayGM() external payable",
-  "function sayGMTo(address) external payable",
-  "function claimBasenameAchievement() external payable",
-  "function claimTxAchievement(uint256 achievementId, uint256 txCount) external payable",
+  "function sayGMTo(address friend) external payable",
+  "function giftTo(address friend) external payable",
+  "function claim() external",
+  "function pendingBalance(address) external view returns (uint256)",
   "function GM_PRICE() external view returns (uint256)",
-  "function MINT_PRICE() external view returns (uint256)",
   "function getUserData(address) external view returns (uint256,uint256,uint256,uint256,bool)",
-  "function getAchievements(address) external view returns (uint256[10],bool[10])",
   "function totalGMs() external view returns (uint256)",
   "function totalUsers() external view returns (uint256)",
   "function bestStreak() external view returns (uint256)",
   "function getTopAddrs() external view returns (address[10])",
   "function getTopStreaks() external view returns (uint256[10])",
   "event GMSent(address indexed,uint256,uint256)",
-  "event AchievementMinted(address indexed,uint256 indexed,string)"
+  "event GMFriend(address indexed,address indexed,uint256)",
+  "event GiftSent(address indexed,address indexed,uint256,uint256,uint256)",
+  "event Claimed(address indexed,uint256)",
 ];
 
-/* ══════════════════════════════════════
-   ACHIEVEMENT DEFINITIONS
-══════════════════════════════════════ */
-const ACHIEVEMENTS = [
-  // Streak
-  { id:1,  cat:'streak', icon:'🌅', name:'Early Riser',      desc:'3-day streak',        req:3 },
-  { id:2,  cat:'streak', icon:'☀️', name:'Good Morning',     desc:'5-day streak',        req:5 },
-  { id:3,  cat:'streak', icon:'🔥', name:'Morning Person',   desc:'10-day streak',       req:10 },
-  { id:4,  cat:'streak', icon:'⚡', name:'Sunrise Veteran',  desc:'50-day streak',       req:50 },
-  { id:5,  cat:'streak', icon:'👑', name:'GM Legend',        desc:'100-day streak',      req:100 },
-  // Basename
-  { id:10, cat:'base',   icon:'🌐', name:'Base Name Holder', desc:'Own a .base.eth name',req:1 },
-  // TX
-  { id:20, cat:'tx', icon:'🚀', name:'Getting Started',  desc:'30 txns on Base',    req:30 },
-  { id:21, cat:'tx', icon:'💫', name:'Active User',      desc:'100 txns on Base',   req:100 },
-  { id:22, cat:'tx', icon:'🛸', name:'Power User',       desc:'500 txns on Base',   req:500 },
-  { id:23, cat:'tx', icon:'🏆', name:'Base OG',          desc:'1000 txns on Base',  req:1000 },
-];
-
-/* ══════════════════════════════════════
+/* ══════════════════════════════
    STATE
-══════════════════════════════════════ */
-let provider, signer, contract, userAddr, canGM = false;
+══════════════════════════════ */
+let provider, signer, contract, userAddr, canGM = false, lastGMTime = 0;
 let resolvedFriendAddr = null, resolveTimer = null;
-let userTxCount = 0, userStreak = 0, hasBasename = false;
-// achievementId → { unlocked, minted }
-let achState = {};
+let selectedAction = 'gm'; // 'gm' | 'gift'
+let notifications = JSON.parse(localStorage.getItem('gm_notifs') || '[]');
 
 const ethProvider  = new ethers.JsonRpcProvider(CFG.ETH_RPC);
 const baseProvider = new ethers.JsonRpcProvider(CFG.RPC);
 
-/* ══════════════════════════════════════
+/* ══════════════════════════════
    WALLET
-══════════════════════════════════════ */
-const openModal  = () => document.getElementById('walletModal').classList.add('on');
-const closeModal = () => document.getElementById('walletModal').classList.remove('on');
+══════════════════════════════ */
+const openModal  = id => document.getElementById(id).classList.add('on');
+const closeModal = id => document.getElementById(id).classList.remove('on');
 
 async function connectWallet() {
   if (!window.ethereum) { toast("No wallet detected.", 'err'); return; }
-  closeModal();
+  closeModal('walletModal');
   try {
     provider = new ethers.BrowserProvider(window.ethereum);
     await provider.send("eth_requestAccounts", []);
@@ -436,21 +476,14 @@ async function connectWallet() {
     userAddr = await signer.getAddress();
     await switchBase();
     contract = new ethers.Contract(CFG.ADDR, ABI, signer);
-    // Read actual price from contract
-    try {
-      CFG.PRICE      = await contract.GM_PRICE();
-      CFG.MINT_PRICE = await contract.MINT_PRICE();
-      console.log('GM_PRICE from contract:', ethers.formatEther(CFG.PRICE), 'ETH');
-    } catch(e) {
-      console.warn('Could not read price from contract, using fallback');
-    }
     document.getElementById('connectBtn').style.display = 'none';
     document.getElementById('wInfo').style.display = 'flex';
     document.getElementById('wAddr').textContent = short(userAddr);
     colorAv(userAddr);
     toast("Wallet connected ✓", 'ok');
     await refresh();
-    await loadAchievements();
+    await checkPending();
+    listenToEvents();
   } catch(e) {
     console.error(e);
     toast(e.shortMessage || e.message?.slice(0,55) || 'Error', 'err');
@@ -461,7 +494,7 @@ async function switchBase() {
   try {
     await provider.send("wallet_switchEthereumChain",[{chainId:"0x"+CFG.CHAIN_ID.toString(16)}]);
   } catch(e) {
-    if (e.code === 4902) {
+    if (e.code===4902) {
       await provider.send("wallet_addEthereumChain",[{
         chainId:"0x"+CFG.CHAIN_ID.toString(16), chainName:"Base",
         nativeCurrency:{name:"Ether",symbol:"ETH",decimals:18},
@@ -471,9 +504,9 @@ async function switchBase() {
   }
 }
 
-/* ══════════════════════════════════════
+/* ══════════════════════════════
    CONTRACT READS
-══════════════════════════════════════ */
+══════════════════════════════ */
 async function refresh() {
   if (!contract || !userAddr) return;
   try {
@@ -482,14 +515,16 @@ async function refresh() {
       contract.totalGMs(), contract.totalUsers(), contract.bestStreak(),
       contract.getTopAddrs(), contract.getTopStreaks(),
     ]);
-    userStreak = Number(ud[0]);
-    document.getElementById('streakNum').textContent = userStreak;
+    document.getElementById('streakNum').textContent = ud[0].toString();
     document.getElementById('sTotal').textContent = fmtN(total);
     document.getElementById('sUsers').textContent = fmtN(users);
     document.getElementById('sBest').textContent  = best.toString()+'🔥';
     canGM = ud[4];
+    lastGMTime = Number(ud[3]);
     updateBtn();
-    canGM ? (document.getElementById('timer').textContent='Now!') : startTimer();
+    canGM
+      ? (document.getElementById('timer').textContent = 'Now!')
+      : startTimer(lastGMTime);
     const lb=[];
     for(let i=0;i<10;i++) if(tops[i]&&tops[i]!==ethers.ZeroAddress) lb.push({addr:tops[i],streak:Number(topS[i])});
     renderLB(lb.length?lb:MOCK_LB);
@@ -500,6 +535,20 @@ async function refresh() {
   }
 }
 
+async function checkPending() {
+  if (!contract || !userAddr) return;
+  try {
+    const bal = await contract.pendingBalance(userAddr);
+    const banner = document.getElementById('claimBanner');
+    if (bal > 0n) {
+      document.getElementById('claimAmount').textContent = ethers.formatEther(bal) + ' ETH';
+      banner.classList.add('show');
+    } else {
+      banner.classList.remove('show');
+    }
+  } catch(e) { console.warn('pending:', e.message); }
+}
+
 function updateBtn() {
   const b = document.getElementById('gmBtn');
   if (!userAddr)  { b.disabled=true;  b.textContent='Connect wallet to GM ☀️'; }
@@ -507,25 +556,22 @@ function updateBtn() {
   else            { b.disabled=true;  b.textContent="Already GM'd today ✓"; }
 }
 
-/* ══════════════════════════════════════
+/* ══════════════════════════════
    SEND GM
-══════════════════════════════════════ */
+══════════════════════════════ */
 async function sendGM() {
-  if (!contract) { openModal(); return; }
+  if (!contract) { openModal('walletModal'); return; }
   try {
-    showTx("Waiting for confirmation…","Confirm in your wallet. ~$0.01 + gas.");
+    showTx("Waiting…", "Confirm in your wallet. ~$0.01 + gas.");
     const tx = await contract.sayGM({ value: CFG.PRICE });
     attachTxLink(tx.hash);
-    document.getElementById('txT').textContent = "Transaction sent…";
+    document.getElementById('txT').textContent = "Sending…";
     document.getElementById('txS').textContent = `TX: ${short(tx.hash)}`;
     const rc = await tx.wait();
     hideTx();
-    if (rc.status === 1) {
-      toast("GM sent! 🌅 Streak updated.", 'ok');
-      canGM = false;
-      await refresh();
-      await loadAchievements(); // re-check after GM
-      popSun();
+    if (rc.status===1) {
+      toast("GM sent! 🌅", 'ok');
+      canGM=false; await refresh(); popSun();
     } else toast("Transaction failed.", 'err');
   } catch(e) {
     hideTx();
@@ -534,261 +580,259 @@ async function sendGM() {
   }
 }
 
-/* ══════════════════════════════════════
-   SEND GM TO FRIEND
-══════════════════════════════════════ */
-async function sendGMFriend() {
-  if (!contract) { openModal(); return; }
-  if (!resolvedFriendAddr) { toast("Enter a valid address or ENS name.", 'err'); return; }
-  try {
-    showTx(`Sending GM to ${short(resolvedFriendAddr)}…`,"Confirm in wallet. ~$0.01 + gas.");
-    const tx = await contract.sayGMTo(resolvedFriendAddr,{value:CFG.PRICE});
-    attachTxLink(tx.hash);
-    document.getElementById('txT').textContent="Transaction sent…";
-    document.getElementById('txS').textContent=`TX: ${short(tx.hash)}`;
-    const rc = await tx.wait();
-    hideTx();
-    if (rc.status===1){
-      toast(`GM sent to ${short(resolvedFriendAddr)}! 🌅`,'ok');
-      document.getElementById('friendInput').value='';
-      setBadge(null); resolvedFriendAddr=null;
-      document.getElementById('friendBtn').disabled=true;
-    } else toast("Transaction failed.", 'err');
-  } catch(e) {
-    hideTx();
-    if(e.code===4001||e.code==='ACTION_REJECTED') toast("Rejected.",'err');
-    else toast(e.reason||e.shortMessage||e.message?.slice(0,55)||'Error','err');
-  }
-}
-
-/* ══════════════════════════════════════
-   ACHIEVEMENTS ENGINE
-══════════════════════════════════════ */
-async function loadAchievements() {
-  if (!userAddr) { renderAchievements(); return; }
-
-  document.getElementById('achLoading').style.display = 'inline';
-
-  // 1. Get minted status from contract
-  let mintedMap = {};
-  try {
-    const [ids, owned] = await contract.getAchievements(userAddr);
-    ids.forEach((id,i)=>{ mintedMap[Number(id)] = owned[i]; });
-  } catch(e) {
-    console.warn('ach contract:', e.message);
-  }
-
-  // 2. Fetch tx count from Basescan API
-  userTxCount = await fetchTxCount(userAddr);
-
-  // 3. Check .base.eth / .eth basename
-  hasBasename = await checkBasename(userAddr);
-
-  // 4. Build achState
-  achState = {};
-  for (const a of ACHIEVEMENTS) {
-    const minted = !!mintedMap[a.id];
-    let unlocked = minted; // already on-chain = definitely unlocked
-
-    if (!unlocked) {
-      if (a.cat === 'streak') unlocked = userStreak >= a.req;
-      if (a.cat === 'tx')     unlocked = userTxCount >= a.req;
-      if (a.cat === 'base')   unlocked = hasBasename;
-    }
-
-    achState[a.id] = { unlocked, minted };
-  }
-
-  document.getElementById('achLoading').style.display = 'none';
-  renderAchievements();
-}
-
-async function fetchTxCount(addr) {
-  try {
-    // Blockscout Base API (no key needed)
-    const url = `https://base.blockscout.com/api/v2/addresses/${addr}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('blockscout fail');
-    const data = await res.json();
-    return parseInt(data.transactions_count || data.tx_count || 0);
-  } catch(_) {}
+/* ══════════════════════════════
+   SEND TO FRIEND
+══════════════════════════════ */
+async function sendToFriend() {
+  if (!contract) { openModal('walletModal'); return; }
+  if (!resolvedFriendAddr) { toast("Enter a valid address.", 'err'); return; }
 
   try {
-    // Fallback: Basescan API
-    const url = `https://api.basescan.org/api?module=account&action=txlist&address=${addr}&startblock=0&endblock=99999999&sort=asc&apikey=${CFG.BASESCAN_KEY}`;
-    const res = await fetch(url);
-    const data = await res.json();
-    if (data.status === '1') return data.result.length;
-  } catch(_) {}
+    if (selectedAction === 'gm') {
+      showTx(`Sending GM to ${short(resolvedFriendAddr)}…`, "~$0.01 + gas. All goes to platform.");
+      const tx = await contract.sayGMTo(resolvedFriendAddr, { value: CFG.PRICE });
+      attachTxLink(tx.hash);
+      document.getElementById('txT').textContent = "Sending…";
+      document.getElementById('txS').textContent = `TX: ${short(tx.hash)}`;
+      const rc = await tx.wait();
+      hideTx();
+      if (rc.status===1) {
+        toast(`GM sent to ${short(resolvedFriendAddr)}! 🌅`, 'ok');
+        resetFriendCard();
+      } else toast("Failed.", 'err');
 
-  return 0;
-}
-
-async function checkBasename(addr) {
-  // Check reverse record on Base L2 (Basenames use CCIP-Read)
-  try {
-    const name = await baseProvider.lookupAddress(addr);
-    if (name && (name.endsWith('.base.eth') || name.endsWith('.eth'))) return true;
-  } catch(_) {}
-  // Fallback: try mainnet ENS
-  try {
-    const name = await ethProvider.lookupAddress(addr);
-    if (name && name.endsWith('.base.eth')) return true;
-  } catch(_) {}
-  return false;
-}
-
-function renderAchievements() {
-  const cats = { streak:'gridStreak', base:'gridBasename', tx:'gridTx' };
-  for (const [cat, gridId] of Object.entries(cats)) {
-    const items = ACHIEVEMENTS.filter(a=>a.cat===cat);
-    document.getElementById(gridId).innerHTML = items.map(a => {
-      const st = achState[a.id] || { unlocked:false, minted:false };
-      const progress = getProgress(a);
-      return `
-        <div class="ach-badge ${st.unlocked?'unlocked':''} ${st.minted?'minted':''}" id="ach-${a.id}">
-          <div style="display:flex;align-items:center;gap:.7rem">
-            <div class="ach-badge-icon">${a.icon}</div>
-            <div>
-              <div class="ach-badge-name">${a.name}</div>
-              <div class="ach-badge-desc">${a.desc}</div>
-            </div>
-          </div>
-          ${progress !== null ? `
-            <div class="ach-progress">
-              <div class="ach-progress-fill" style="width:${progress}%"></div>
-            </div>
-          ` : ''}
-          <div class="ach-badge-status">
-            <div class="ach-check">✓</div>
-            ${st.minted
-              ? `<span style="font-size:.62rem;color:var(--ok);font-family:'Space Mono',monospace">minted ✓</span>`
-              : st.unlocked
-                ? `<button class="ach-mint-btn" onclick="mintAchievement(${a.id})">Mint NFT — $0.10</button>`
-                : `<span style="font-size:.62rem;color:var(--muted);font-family:'Space Mono',monospace">${progressLabel(a)}</span>`
-            }
-          </div>
-        </div>`;
-    }).join('');
-  }
-}
-
-function getProgress(a) {
-  if (!userAddr) return null;
-  if (a.cat === 'streak') {
-    if (userStreak >= a.req) return 100;
-    return Math.min(99, Math.round((userStreak / a.req) * 100));
-  }
-  if (a.cat === 'tx') {
-    if (userTxCount >= a.req) return 100;
-    return Math.min(99, Math.round((userTxCount / a.req) * 100));
-  }
-  return null; // basename — no progress bar
-}
-
-function progressLabel(a) {
-  if (!userAddr) return 'connect wallet';
-  if (a.cat === 'streak') return `${userStreak}/${a.req} days`;
-  if (a.cat === 'tx')     return `${userTxCount}/${a.req} txns`;
-  if (a.cat === 'base')   return 'no basename found';
-  return 'locked';
-}
-
-async function mintAchievement(id) {
-  if (!contract) { openModal(); return; }
-  const a = ACHIEVEMENTS.find(x=>x.id===id);
-  if (!a) return;
-
-  try {
-    showTx(`Minting "${a.name}"…`, "Confirm in wallet. ~$0.01 + gas.");
-    let tx;
-    if (id === 10) {
-      tx = await contract.claimBasenameAchievement({ value: CFG.MINT_PRICE });
-    } else if (id >= 20) {
-      tx = await contract.claimTxAchievement(id, userTxCount, { value: CFG.MINT_PRICE });
     } else {
-      toast("Streak achievements mint automatically on GM.", 'inf');
-      hideTx(); return;
+      // Gift
+      const ethVal = parseFloat(document.getElementById('giftInput').value);
+      if (!ethVal || ethVal < 0.000005) { toast("Enter a valid amount.", 'err'); return; }
+      const value = ethers.parseEther(ethVal.toString());
+      const usd   = (ethVal * 2000).toFixed(2);
+      showTx(`Gifting $${usd} to ${short(resolvedFriendAddr)}…`, "90% goes to friend, 10% to platform.");
+      const tx = await contract.giftTo(resolvedFriendAddr, { value });
+      attachTxLink(tx.hash);
+      document.getElementById('txT').textContent = "Sending gift…";
+      document.getElementById('txS').textContent = `TX: ${short(tx.hash)}`;
+      const rc = await tx.wait();
+      hideTx();
+      if (rc.status===1) {
+        toast(`🎁 Gift sent! $${usd} → ${short(resolvedFriendAddr)}`, 'gold');
+        resetFriendCard();
+      } else toast("Failed.", 'err');
     }
-
-    attachTxLink(tx.hash);
-    document.getElementById('txT').textContent = "Minting…";
-    document.getElementById('txS').textContent = `TX: ${short(tx.hash)}`;
-    const rc = await tx.wait();
-    hideTx();
-
-    if (rc.status === 1) {
-      toast(`🏅 "${a.name}" NFT minted!`, 'gold');
-      achState[id].minted = true;
-      // Animate the badge
-      const el = document.getElementById(`ach-${id}`);
-      if (el) { el.classList.add('minted'); el.classList.add('ach-pop'); }
-      renderAchievements();
-    } else toast("Minting failed.", 'err');
   } catch(e) {
     hideTx();
-    if(e.code===4001||e.code==='ACTION_REJECTED') toast("Rejected.",'err');
+    if(e.code===4001||e.code==='ACTION_REJECTED') toast("Rejected.", 'err');
     else toast(e.reason||e.shortMessage||e.message?.slice(0,55)||'Error','err');
   }
 }
 
-/* ══════════════════════════════════════
-   ENS FRIEND INPUT
-══════════════════════════════════════ */
+/* ══════════════════════════════
+   CLAIM
+══════════════════════════════ */
+async function doClaim() {
+  if (!contract) { openModal('walletModal'); return; }
+  try {
+    showTx("Claiming…", "Confirm in wallet.");
+    const tx = await contract.claim();
+    attachTxLink(tx.hash);
+    const rc = await tx.wait();
+    hideTx();
+    if (rc.status===1) {
+      toast("Claimed! 💰 ETH sent to your wallet.", 'ok');
+      document.getElementById('claimBanner').classList.remove('show');
+    } else toast("Failed.", 'err');
+  } catch(e) {
+    hideTx();
+    if(e.code===4001||e.code==='ACTION_REJECTED') toast("Rejected.", 'err');
+    else toast(e.reason||e.shortMessage||e.message?.slice(0,55)||'Error','err');
+  }
+}
+
+/* ══════════════════════════════
+   EVENTS (live notifications)
+══════════════════════════════ */
+function listenToEvents() {
+  if (!contract || !userAddr) return;
+  const readOnly = new ethers.Contract(CFG.ADDR, ABI, baseProvider);
+
+  // Someone sent you a GM
+  readOnly.on("GMFriend", (sender, friend, ts) => {
+    if (friend.toLowerCase() === userAddr.toLowerCase()) {
+      addNotif({
+        icon: '☀️',
+        text: `<b>${short(sender)}</b> sent you a GM! Check your pending balance.`,
+        time: Date.now(),
+      });
+      checkPending();
+    }
+  });
+
+  // Someone gifted you
+  readOnly.on("GiftSent", (sender, friend, total, share, ts) => {
+    if (friend.toLowerCase() === userAddr.toLowerCase()) {
+      const usd = (parseFloat(ethers.formatEther(share)) * 2000).toFixed(2);
+      addNotif({
+        icon: '🎁',
+        text: `<b>${short(sender)}</b> gifted you ~$${usd}! Claim it below.`,
+        time: Date.now(),
+      });
+      checkPending();
+    }
+  });
+}
+
+/* ══════════════════════════════
+   NOTIFICATIONS
+══════════════════════════════ */
+function addNotif(n) {
+  notifications.unshift(n);
+  if (notifications.length > 20) notifications.pop();
+  localStorage.setItem('gm_notifs', JSON.stringify(notifications));
+  renderNotifs();
+  // Animate bell
+  const bell = document.getElementById('bellBtn');
+  bell.style.transform = 'scale(1.3)';
+  setTimeout(() => bell.style.transform = '', 300);
+}
+
+function renderNotifs() {
+  const list  = document.getElementById('notifList');
+  const badge = document.getElementById('bellBadge');
+  if (!notifications.length) {
+    list.innerHTML = '<div class="notif-empty">No notifications yet</div>';
+    badge.classList.remove('show');
+    return;
+  }
+  badge.textContent = notifications.length > 9 ? '9+' : notifications.length;
+  badge.classList.add('show');
+  list.innerHTML = notifications.map(n => `
+    <div class="notif-item">
+      <div class="notif-icon">${n.icon}</div>
+      <div class="notif-body">
+        <div class="notif-text">${n.text}</div>
+        <div class="notif-time">${timeAgo(n.time)}</div>
+      </div>
+    </div>`).join('');
+}
+
+function clearNotifs() {
+  notifications = [];
+  localStorage.setItem('gm_notifs', '[]');
+  renderNotifs();
+}
+
+function toggleNotif() {
+  document.getElementById('notifDropdown').classList.toggle('open');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', e => {
+  if (!document.getElementById('bellWrap').contains(e.target))
+    document.getElementById('notifDropdown').classList.remove('open');
+});
+
+/* ══════════════════════════════
+   FRIEND CARD UX
+══════════════════════════════ */
+function selectAction(type) {
+  selectedAction = type;
+  document.getElementById('choiceGM').classList.toggle('selected', type==='gm');
+  document.getElementById('choiceGift').classList.toggle('selected', type==='gift');
+  document.getElementById('giftAmountWrap').classList.toggle('show', type==='gift');
+  updateFriendBtn();
+}
+
+function setPreset(val) {
+  document.getElementById('giftInput').value = val;
+  updateGiftBtn();
+}
+
+function updateGiftBtn() { updateFriendBtn(); }
+
+function updateFriendBtn() {
+  const btn = document.getElementById('friendSendBtn');
+  if (!resolvedFriendAddr || !userAddr) { btn.disabled=true; return; }
+  if (selectedAction === 'gm') {
+    btn.disabled = false;
+    btn.textContent = '☀️ Send GM — $0.01';
+  } else {
+    const val = parseFloat(document.getElementById('giftInput').value);
+    if (!val || val < 0.000005) { btn.disabled=true; btn.textContent='🎁 Enter amount'; return; }
+    const usd = (val * 2000).toFixed(2);
+    btn.disabled = false;
+    btn.textContent = `🎁 Send Gift — $${usd}`;
+  }
+}
+
+function resetFriendCard() {
+  document.getElementById('friendInput').value = '';
+  document.getElementById('giftInput').value   = '';
+  resolvedFriendAddr = null;
+  setInputState(''); setBadge(null);
+  selectAction('gm');
+  document.getElementById('friendSendBtn').disabled = true;
+}
+
+/* ══════════════════════════════
+   ENS RESOLUTION
+══════════════════════════════ */
 function onFriendInput() {
   clearTimeout(resolveTimer);
   const raw = document.getElementById('friendInput').value.trim();
-  resolvedFriendAddr=null; document.getElementById('friendBtn').disabled=true;
+  resolvedFriendAddr = null;
   setInputState(''); setBadge(null);
+  updateFriendBtn();
   if (!raw) return;
   if (/^0x[0-9a-fA-F]{40}$/.test(raw)) {
-    resolvedFriendAddr=ethers.getAddress(raw); setInputState('valid');
-    setBadge({type:'addr',addr:resolvedFriendAddr});
-    document.getElementById('friendBtn').disabled=!userAddr; return;
+    resolvedFriendAddr = ethers.getAddress(raw);
+    setInputState('valid'); setBadge({type:'addr',addr:resolvedFriendAddr});
+    updateFriendBtn(); return;
   }
-  const lower=raw.toLowerCase();
-  const isBase=lower.endsWith('.base.eth')||lower.endsWith('.base');
-  const isEth=lower.endsWith('.eth')&&!isBase;
-  if (!isEth&&!isBase) return;
+  const lower = raw.toLowerCase();
+  const isBase = lower.endsWith('.base.eth') || lower.endsWith('.base');
+  const isEth  = lower.endsWith('.eth') && !isBase;
+  if (!isEth && !isBase) return;
   setInputState('loading');
-  resolveTimer=setTimeout(()=>resolveDomain(raw,isBase?'base':'eth'),600);
+  resolveTimer = setTimeout(() => resolveDomain(raw, isBase?'base':'eth'), 600);
 }
 
 async function resolveDomain(name, type) {
-  document.getElementById('inputSpin').style.display='block';
+  document.getElementById('inputSpin').style.display = 'block';
   try {
-    let addr=null;
-    if (type==='eth') addr=await ethProvider.resolveName(name);
+    let addr = null;
+    if (type==='eth') addr = await ethProvider.resolveName(name);
     else {
-      try{addr=await ethProvider.resolveName(name);}catch(_){}
-      if(!addr){try{addr=await baseProvider.resolveName(name);}catch(_){}}
+      try { addr = await ethProvider.resolveName(name); } catch(_) {}
+      if (!addr) { try { addr = await baseProvider.resolveName(name); } catch(_) {} }
     }
-    document.getElementById('inputSpin').style.display='none';
-    if (addr){ resolvedFriendAddr=addr; setInputState('valid'); setBadge({type,name,addr}); document.getElementById('friendBtn').disabled=!userAddr; }
+    document.getElementById('inputSpin').style.display = 'none';
+    if (addr) { resolvedFriendAddr=addr; setInputState('valid'); setBadge({type,name,addr}); updateFriendBtn(); }
     else      { setInputState('invalid'); setBadge({type,name,addr:null}); }
   } catch(e) {
-    document.getElementById('inputSpin').style.display='none';
+    document.getElementById('inputSpin').style.display = 'none';
     setInputState('invalid'); setBadge({type,name,addr:null,error:e.message});
   }
 }
 
-function setInputState(s){
-  const inp=document.getElementById('friendInput');
+function setInputState(s) {
+  const inp = document.getElementById('friendInput');
   inp.classList.remove('valid','invalid','loading');
-  if(s) inp.classList.add(s);
-  document.getElementById('inputSpin').style.display=s==='loading'?'block':'none';
+  if (s) inp.classList.add(s);
+  document.getElementById('inputSpin').style.display = s==='loading'?'block':'none';
 }
-function setBadge(data){
-  const badge=document.getElementById('resolveBadge');
-  if(!data){badge.className='resolve-badge';return;}
-  if(data.type==='addr'){
+function setBadge(data) {
+  const badge = document.getElementById('resolveBadge');
+  if (!data) { badge.className='resolve-badge'; return; }
+  if (data.type==='addr') {
     badge.className='resolve-badge ok show';
     document.getElementById('rbIcon').textContent='✓';
     document.getElementById('rbName').innerHTML='Valid address';
     document.getElementById('rbAddr').textContent=data.addr; return;
   }
-  const tb=data.type==='base'?`<span class="domain-type base">Basename</span>`:`<span class="domain-type ens">ENS</span>`;
-  if(data.addr){
+  const tb = data.type==='base'
+    ? `<span class="domain-type base">Basename</span>`
+    : `<span class="domain-type ens">ENS</span>`;
+  if (data.addr) {
     badge.className='resolve-badge ok show';
     document.getElementById('rbIcon').textContent='✓';
     document.getElementById('rbName').innerHTML=`${data.name} ${tb}`;
@@ -797,37 +841,40 @@ function setBadge(data){
     badge.className='resolve-badge err show';
     document.getElementById('rbIcon').textContent='✗';
     document.getElementById('rbName').innerHTML=`${data.name} ${tb}`;
-    document.getElementById('rbAddr').textContent=data.error?'Resolution error':'Domain not found or not registered';
+    document.getElementById('rbAddr').textContent=data.error?'Resolution error':'Not found';
   }
 }
 
-/* ══════════════════════════════════════
+/* ══════════════════════════════
    TIMER
-══════════════════════════════════════ */
+══════════════════════════════ */
 let _ti;
-function getTodayUTC(){const d=new Date();return Math.floor(new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())).getTime()/1000);}
-function startTimer(){
+function startTimer(lastGMTs) {
   clearInterval(_ti);
-  const tick=()=>{
-    const diff=getTodayUTC()+86400-Math.floor(Date.now()/1000);
-    if(diff<=0){clearInterval(_ti);return;}
-    const h=String(Math.floor(diff/3600)).padStart(2,'0');
-    const m=String(Math.floor(diff%3600/60)).padStart(2,'0');
-    const s=String(diff%60).padStart(2,'0');
-    document.getElementById('timer').textContent=`${h}:${m}:${s}`;
+  const tick = () => {
+    const nextAllowed = (lastGMTs + 86400);
+    const diff = nextAllowed - Math.floor(Date.now() / 1000);
+    if (diff <= 0) {
+      clearInterval(_ti);
+      document.getElementById('timer').textContent = 'Now!';
+      canGM = true; updateBtn(); return;
+    }
+    const h = String(Math.floor(diff / 3600)).padStart(2, '0');
+    const m = String(Math.floor(diff % 3600 / 60)).padStart(2, '0');
+    const s = String(diff % 60).padStart(2, '0');
+    document.getElementById('timer').textContent = `${h}:${m}:${s}`;
   };
-  tick(); _ti=setInterval(tick,1000);
+  tick(); _ti = setInterval(tick, 1000);
 }
 
-/* ══════════════════════════════════════
+/* ══════════════════════════════
    LEADERBOARD
-══════════════════════════════════════ */
+══════════════════════════════ */
 const MOCK_LB=[
   {addr:"0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",streak:42},
   {addr:"0xab5801a7d398351b8be11c439e05c5b3259aec9b",streak:31},
   {addr:"0x742d35Cc6634C0532925a3b844Bc454e4438f44e",streak:28},
   {addr:"0x1111111111111111111111111111111111111111",streak:17},
-  {addr:"0x2222222222222222222222222222222222222222",streak:11},
 ];
 function renderLB(items){
   const rc=["gold","silver","bronze","","","","","","",""];
@@ -841,30 +888,38 @@ function renderLB(items){
     </div>`).join('');
 }
 
-/* ══════════════════════════════════════
-   TX / TOAST / HELPERS
-══════════════════════════════════════ */
+/* ══════════════════════════════
+   TX / TOAST
+══════════════════════════════ */
 function showTx(ti,su){document.getElementById('txT').textContent=ti;document.getElementById('txS').textContent=su;document.getElementById('txL').style.display='none';document.getElementById('txOv').classList.add('on');}
 function attachTxLink(h){const l=document.getElementById('txL');l.href=`${CFG.SCAN}/tx/${h}`;l.style.display='inline';}
 function hideTx(){document.getElementById('txOv').classList.remove('on');}
 let _tt;
 function toast(msg,type='inf'){const el=document.getElementById('toast');el.textContent=msg;el.className=`toast ${type} on`;clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('on'),3500);}
 
-const short=a=>a.slice(0,6)+'…'+a.slice(-4);
-const fmtN=n=>{const x=Number(n);return x>=1000?(x/1000).toFixed(1)+'k':x.toString();};
-const aC=a=>`hsl(${parseInt(a.slice(2,6),16)%360},65%,42%)`;
-function colorAv(a){document.getElementById('wAv').style.background=`linear-gradient(135deg,${aC(a)},hsl(${parseInt(a.slice(-4),16)%360},75%,58%))`;}
+/* ══════════════════════════════
+   HELPERS
+══════════════════════════════ */
+const short = a => a.slice(0,6)+'…'+a.slice(-4);
+const fmtN  = n => { const x=Number(n); return x>=1000?(x/1000).toFixed(1)+'k':x.toString(); };
+const aC    = a => `hsl(${parseInt(a.slice(2,6),16)%360},60%,40%)`;
+function colorAv(a){document.getElementById('wAv').style.background=`linear-gradient(135deg,${aC(a)},hsl(${parseInt(a.slice(-4),16)%360},70%,55%))`;}
 function popSun(){const s=document.getElementById('sun');s.classList.add('pop');setTimeout(()=>s.classList.remove('pop'),700);}
+function timeAgo(ts){
+  const s=Math.floor((Date.now()-ts)/1000);
+  if(s<60) return 'just now';
+  if(s<3600) return Math.floor(s/60)+'m ago';
+  if(s<86400) return Math.floor(s/3600)+'h ago';
+  return Math.floor(s/86400)+'d ago';
+}
 
-/* ══════════════════════════════════════
+/* ══════════════════════════════
    INIT
-══════════════════════════════════════ */
+══════════════════════════════ */
 function init(){
   const cl=document.getElementById('cLink');
   if(!CFG.ADDR.startsWith('0xYOUR')){cl.href=`${CFG.SCAN}/address/${CFG.ADDR}`;cl.textContent=short(CFG.ADDR);}
-  renderAchievements(); // render locked state
-  renderLB(MOCK_LB);
-  startTimer();
+  renderLB(MOCK_LB); startTimer(0); renderNotifs();
   if(window.ethereum){
     window.ethereum.request({method:'eth_accounts'}).then(a=>{if(a.length)connectWallet();});
     window.ethereum.on('chainChanged',()=>location.reload());
