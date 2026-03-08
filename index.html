@@ -941,48 +941,73 @@ function renderSimpleLB(elId, items, valueFn) {
     </div>`).join('') || '<div style="padding:.8rem 1.1rem;font-size:.7rem;color:var(--muted)">No data yet</div>';
 }
 
+
+/* ══════════════════════════════
+   EVENT STATS LEADERBOARD
+══════════════════════════════ */
 let _statsLoaded = false;
 async function loadEventStats() {
   if (_statsLoaded) return;
   _statsLoaded = true;
 
+  ['lbGMSent','lbGMRecv','lbGiftSent','lbGiftRecv'].forEach(id => {
+    document.getElementById(id).innerHTML = '<div style="padding:.8rem 1.1rem;font-size:.7rem;color:var(--muted)">Loading…</div>';
+  });
+
   try {
     const readOnly = new ethers.Contract(CFG.ADDR, ABI, baseProvider);
-
-    // Fetch last 2000 blocks of events
     const latestBlock = await baseProvider.getBlockNumber();
-    const fromBlock   = Math.max(0, latestBlock - 2000);
+    const fromBlock = Math.max(0, latestBlock - 100000);
 
     const [gmFriendEvs, giftEvs] = await Promise.all([
-      readOnly.queryFilter(readOnly.filters.GMFriend(), fromBlock),
-      readOnly.queryFilter(readOnly.filters.GiftSent(),  fromBlock),
+      readOnly.queryFilter('GMFriend', fromBlock, latestBlock),
+      readOnly.queryFilter('GiftSent', fromBlock, latestBlock),
     ]);
 
-    // GM sent/received counts
+    console.log('GMFriend:', gmFriendEvs.length, 'GiftSent:', giftEvs.length);
+
     const gmSent = {}, gmRecv = {};
     gmFriendEvs.forEach(e => {
-      const s = e.args[0], f = e.args[1];
-      gmSent[s] = (gmSent[s] || 0) + 1;
-      gmRecv[f] = (gmRecv[f] || 0) + 1;
+      const sender = e.args.sender ?? e.args[0];
+      const friend = e.args.friend ?? e.args[1];
+      if (!sender || !friend) return;
+      gmSent[sender] = (gmSent[sender] || 0) + 1;
+      gmRecv[friend] = (gmRecv[friend] || 0) + 1;
     });
 
-    // Gift sent/received amounts
     const giftSent = {}, giftRecv = {};
     giftEvs.forEach(e => {
-      const s = e.args[0], f = e.args[1], share = e.args[3];
-      giftSent[s] = (giftSent[s] || 0n) + share;
-      giftRecv[f] = (giftRecv[f] || 0n) + share;
+      const sender      = e.args.sender      ?? e.args[0];
+      const friend      = e.args.friend      ?? e.args[1];
+      const friendShare = e.args.friendShare ?? e.args[3];
+      if (!sender || !friend || friendShare == null) return;
+      const share = BigInt(friendShare.toString());
+      giftSent[sender] = (giftSent[sender] || 0n) + share;
+      giftRecv[friend] = (giftRecv[friend] || 0n) + share;
     });
 
-    const toArr = obj => Object.entries(obj).map(([addr,v])=>({addr,v})).sort((a,b)=>Number(b.v)-Number(a.v));
+    const toArr = obj => Object.entries(obj)
+      .map(([addr, v]) => ({ addr, v }))
+      .sort((a, b) => (BigInt(b.v.toString()) > BigInt(a.v.toString()) ? 1 : -1));
 
-    renderSimpleLB('lbGMSent',  toArr(gmSent),  r => r.v + ' sent');
-    renderSimpleLB('lbGMRecv',  toArr(gmRecv),  r => r.v + ' recv');
-    renderSimpleLB('lbGiftSent', toArr(giftSent), r => '$'+(parseFloat(ethers.formatEther(r.v))*2000).toFixed(2));
-    renderSimpleLB('lbGiftRecv', toArr(giftRecv), r => '$'+(parseFloat(ethers.formatEther(r.v))*2000).toFixed(2));
+    const empty = id => {
+      document.getElementById(id).innerHTML = '<div style="padding:.8rem 1.1rem;font-size:.7rem;color:var(--muted)">No data yet</div>';
+    };
+
+    const gmSentArr = toArr(gmSent), gmRecvArr = toArr(gmRecv);
+    gmSentArr.length ? renderSimpleLB('lbGMSent', gmSentArr, r => r.v + ' ☀️') : empty('lbGMSent');
+    gmRecvArr.length ? renderSimpleLB('lbGMRecv', gmRecvArr, r => r.v + ' ☀️') : empty('lbGMRecv');
+
+    const giftSentArr = toArr(giftSent), giftRecvArr = toArr(giftRecv);
+    giftSentArr.length ? renderSimpleLB('lbGiftSent', giftSentArr, r => '$' + (parseFloat(ethers.formatEther(r.v)) * 2000).toFixed(2)) : empty('lbGiftSent');
+    giftRecvArr.length ? renderSimpleLB('lbGiftRecv', giftRecvArr, r => '$' + (parseFloat(ethers.formatEther(r.v)) * 2000).toFixed(2)) : empty('lbGiftRecv');
 
   } catch(e) {
-    console.warn('stats:', e.message);
+    console.error('loadEventStats:', e);
+    _statsLoaded = false;
+    ['lbGMSent','lbGMRecv','lbGiftSent','lbGiftRecv'].forEach(id => {
+      document.getElementById(id).innerHTML = '<div style="padding:.8rem 1.1rem;font-size:.7rem;color:var(--err)">Error — try again</div>';
+    });
   }
 }
 
