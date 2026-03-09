@@ -1,0 +1,29 @@
+{
+  "accountAssociation": {  // these will be added in step 5
+    "header": "",
+    "payload": "",
+    "signature": ""
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "GM Base",
+    "homeUrl": "https://cryptojefe-land.github.io/base-gm/",
+    "iconUrl": "https://cryptojefe-land.github.io/base-gm/icon.png",
+    "splashImageUrl": "https://cryptojefe-land.github.io/base-gm/og.png",
+    "splashBackgroundColor": "#07090f",
+    "webhookUrl": "https://ex.co/api/webhook",
+    "subtitle": "Daily GM streak on Base",
+    "description": "Say GM every day, build your on-chain streak, send GM to friends and gift ETH.",
+    "screenshotUrls": [
+      "https://cryptojefe-land.github.io/base-gm/og.png" 
+    ],
+    "primaryCategory": "social",
+    "tags": ["gm", "streak", "base", "onchain", "social"],
+    "heroImageUrl": "https://cryptojefe-land.github.io/base-gm/og.png",
+    "tagline": "Play instantly",
+    "ogTitle": "GM Base",
+    "ogDescription": "Say GM every day, build your on-chain streak, send GM to friends and gift ETH.",
+    "ogImageUrl": "https://cryptojefe-land.github.io/base-gm/og.png",
+    "noindex": true
+  }
+}
