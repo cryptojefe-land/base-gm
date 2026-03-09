@@ -4,7 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GM Base — Daily Streak</title>
-<meta name="base:app_id" content="69ad565436e1b05c113ad71a"/>
+<meta name="fc:miniapp" content='{
+  "version":"next",
+  "imageUrl":"https://cryptojefe-land.github.io/base-gm/og.png",
+  "button":{
+    "title":"Say GM ☀️",
+    "action":{
+      "type":"launch_miniapp",
+      "name":"GM Base",
+      "url":"https://cryptojefe-land.github.io/base-gm/",
+      "splashBackgroundColor":"#07090f"
+    }
+  }
+}' />
+<meta name="base:app_id" content="69ad565436e1b05c113ad71a" />
+<script src="https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk/dist/index.umd.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
 <style>
@@ -882,6 +896,9 @@ async function safeConnect() {
 }
 
 function init(){
+  // Signal to Base app that mini app is ready
+  if (window.MiniAppSDK) window.MiniAppSDK.actions.ready().catch(()=>{});
+  else if (window.sdk) window.sdk.actions.ready().catch(()=>{});
   const cl=document.getElementById('cLink');
   if(!CFG.ADDR.startsWith('0xYOUR')){cl.href=`${CFG.SCAN}/address/${CFG.ADDR}`;cl.textContent=short(CFG.ADDR);}
   startTimer(0); renderNotifs();
