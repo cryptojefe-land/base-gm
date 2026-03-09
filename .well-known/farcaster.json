@@ -1,9 +1,4 @@
 {
-  "accountAssociation": {
-    "header": "",
-    "payload": "",
-    "signature": ""
-  },
   "miniapp": {
     "version": "1",
     "name": "GM Base",
@@ -15,12 +10,8 @@
     "description": "Say GM every day, build your on-chain streak, send GM to friends and gift ETH.",
     "primaryCategory": "social",
     "tags": ["gm", "streak", "base", "onchain", "social"],
-    "heroImageUrl": "https://cryptojefe-land.github.io/base-gm/og.png",
     "tagline": "Say GM every day ☀️",
     "ogTitle": "GM Base — Daily Streak",
-    "ogDescription": "Say GM every day on Base. Build your streak. Send GM to friends.",
-    "ogImageUrl": "https://cryptojefe-land.github.io/base-gm/og.png",
-    "noindex": false
+    "ogDescription": "Say GM every day on Base. Build your streak. Send GM to friends."
   }
 }
-
